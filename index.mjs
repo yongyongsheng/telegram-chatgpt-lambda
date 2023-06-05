@@ -73,12 +73,13 @@ export const handler = async(event) => {
     var params = {
         TableName: 'siginna-chat',
         Item: {
-            'ids' : {S: chatRoom+'-'+chatTime},
-            'chat_id' : {S: `chatRoom`},
-            'first_name': {S: `chatPerson`},
-            'time' : {N: chatTime},
-            'message': {S: chatMsg},
-            'response': {S: botReply}
+            "ids": `${chatRoom}` + '-' + `${chatTime}`,
+            "chat_id": `${chatRoom}`,
+            "first_name": `${chatPerson}`,
+            "chat_time": chatTime,
+
+            "message": `${chatMsg}`, 
+            "response": `${botReply}`
         }
     };
     console.log("ddb_param", params)
