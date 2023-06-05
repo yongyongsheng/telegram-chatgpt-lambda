@@ -86,6 +86,9 @@ if (history && history.length >0){
     var m= history.length - max + i
     console.log(m, history[m].message.S)
     console.log(m, history[m].response.S)
+    
+    apiMsg.push({"role":"user", "content": history[m].message.S})
+    apiMsg.push({"role":"assistant", "content": history[m].response.S})
   }
 }
 
