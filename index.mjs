@@ -72,7 +72,7 @@ export const handler = async(event) => {
             "ids": {S: `${chatTime}` + '-' + `${chatRoom}`},
             "chat_id": {S: `${chatRoom}`},
             "first_name": {S: `${chatPerson}`},
-            "chat_time": {N: chatTime},
+            "chat_time": {N: `${chatTime}`},
 
             "message": {S: `${chatMsg}`}, 
             "response": {S: `${botReply}`}
