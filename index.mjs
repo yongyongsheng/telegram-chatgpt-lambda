@@ -7,46 +7,45 @@ const ddb = new AWS.DynamoDB({
     region: 'ap-southeast-1'
   });
 
-// async function getItemByIdAndBeforeTime(id, time) {
-//     let params = {
-//       TableName: "your-table-name",
-//       KeyConditionExpression: "id = :id AND #createdAt < :time",
-//       ExpressionAttributeNames: { "#createdAt": "createdAt" },
-//       ExpressionAttributeValues: {
-//         ":id": { S: id },
-//         ":time": { N: `${time}` }
-//       }
-//     };
+async function getItemRecent(chat_id, chat_time) {
+    let params = {
+      TableName: "siginna-chat",
+      KeyConditionExpression: "chat_id = :chat_id AND #chat_time < :chat_time",
+      ExpressionAttributeNames: { "#chat_time": "chat_time" },
+      ExpressionAttributeValues: {
+        ":chat_id": { S: chat_id },
+        ":chat_time": { N: `${chat_time}` }
+      }
+    };
   
-//     try {
-//       let result = await dynamodb.query(params).promise();
-//       return result.Items;
-//     } catch (error) {
-//       console.log("Error retrieving item from DynamoDB: ", error);
-//     }
-// }
+    try {
+      let result = await dynamodb.query(params).promise();
+      return result.Items;
+    } catch (error) {
+      console.log("Error retrieving item from DynamoDB: ", error);
+    }
+}
 
-async function putItem(chatRoom,chatPerson,chatTime, chatMsg,botReply){
+async function putItem(chat_id,first_name,chat_time, message,response){
     let params = {
         TableName: 'siginna-chat',
         Item: {
-            "ids": {S: `${chatTime}` + '-' + `${chatRoom}`},
-            "chat_id": {S: `${chatRoom}`},
-            "first_name": {S: `${chatPerson}`},
-            "chat_time": {N: `${chatTime}`},
+            "ids": {S: `${chat_time}` + '-' + `${chat_id}`},
+            "chat_id": {S: `${chat_id}`},
+            "first_name": {S: `${first_name}`},
+            "chat_time": {N: `${chat_time}`},
 
-            "message": {S: `${chatMsg}`}, 
-            "response": {S: `${botReply}`}
+            "message": {S: `${message}`}, 
+            "response": {S: `${response}`}
         }
     };
-    console.log("ddb_param", params)
-
+    
     // Call DynamoDB to add the item to the table
     return await ddb.putItem(params, function(err, data) {
         if (err) {
             console.log("DDB Error", err);
         } else {
-            console.log("DDB Success", data);
+            //console.log("DDB Success", data);
         }
     });
 }
@@ -61,6 +60,9 @@ export const handler = async(event) => {
     let chatPerson = data.message.chat.first_name;
     let chatTime = data.message.date;
     let chatMsg;
+
+    let history = await getItemRecent(chatRoom, chatTime);
+    console.log("history",history)
 
     const telegramBot = new telegram(process.env.tg_token);
     await telegramBot.sendChatAction(chatRoom, 'typing');
