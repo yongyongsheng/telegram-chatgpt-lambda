@@ -78,8 +78,9 @@ let history = await getItemRecent(chatRoom, chatTime);
 if (history && history.length >0){
   console.log("history",history.length, history)
   
-  for(var i=0; i<3; i++){
-    var m= history.length - i -1
+  var max=3
+  for(var i=0; i<max; i++){
+    var m= history.length - max + i
     console.log(m, history[m].message.S)
     console.log(m, history[m].response.S)
   }
