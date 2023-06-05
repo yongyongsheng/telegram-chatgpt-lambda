@@ -5,44 +5,44 @@ import AWS from "aws-sdk";
 const ddb = new AWS.DynamoDB({
     apiVersion: '2012-08-10',
     region: 'ap-southeast-1'
-  });
+});
+
+const telegramBot = new telegram(process.env.tg_token);
 
 async function getItemRecent(chat_id, chat_time_now) {
     let chat_time = chat_time_now - 3600;
     let params = {
-      TableName: "si-ginna-convo",
-      KeyConditionExpression: "chat_id = :chat_id AND #chat_time > :chat_time",
-      ExpressionAttributeNames: { "#chat_time": "chat_time" },
-      ExpressionAttributeValues: {
-        ":chat_id": { S: `${chat_id}` },
-        ":chat_time": { N: `${chat_time}` }
-      }
+        TableName: "si-ginna-convo",
+        KeyConditionExpression: "chat_id = :chat_id AND #chat_time > :chat_time",
+        ExpressionAttributeNames: { "#chat_time": "chat_time" },
+        ExpressionAttributeValues: {
+            ":chat_id": { S: `${chat_id}` },
+            ":chat_time": { N: `${chat_time}` }
+        }
     };
-    //console.log("get1", params)
-  
+
     try {
-      let result = await ddb.query(params).promise();
-      //=console.log("get2", result)
-      return result.Items;
+        let result = await ddb.query(params).promise();
+        //console.log("getItem", result)
+        return result.Items;
     } catch (error) {
-      console.log("Error retrieving item from DynamoDB: ", error);
+        console.log("Error retrieving item from DynamoDB: ", error);
     }
 }
 
-async function putItem(chat_id,first_name,chat_time, message,response){
+async function putItem(chat_id, first_name, chat_time, message, response) {
     let params = {
         TableName: 'si-ginna-convo',
         Item: {
-            //"ids": {S: `${chat_time}` + '-' + `${chat_id}`},
-            "chat_id": {S: `${chat_id}`},
-            "first_name": {S: `${first_name}`},
-            "chat_time": {N: `${chat_time}`},
+            "chat_id": { S: `${chat_id}` },
+            "first_name": { S: `${first_name}` },
+            "chat_time": { N: `${chat_time}` },
 
-            "message": {S: `${message}`}, 
-            "response": {S: `${response}`}
+            "message": { S: `${message}` },
+            "response": { S: `${response}` }
         }
     };
-    
+
     // Call DynamoDB to add the item to the 
     try {
         await ddb.putItem(params).promise();
@@ -54,77 +54,70 @@ async function putItem(chat_id,first_name,chat_time, message,response){
     return
 }
 
-export const handler = async(event) => {
-    
-    let userData
-    let data = JSON.parse(event.body) 
-    console.log("inputData",data)
-    
+export const handler = async (event) => {
+
+    let data = JSON.parse(event.body)
+    console.log("inputData", data)
+
+    let apiData
+    let apiMsg = []
+    let toLogDb = true;
+
     let chatRoom = data.message.chat.id
     let chatPerson = data.message.chat.first_name;
     let chatTime = data.message.date;
     let chatMsg;
 
-    const telegramBot = new telegram(process.env.tg_token);
-    await telegramBot.sendChatAction(chatRoom, 'typing');
+    // Start preping the API
+    apiMsg.push({ "role": "system", "content": "You are a Singaporean gangster. Be rude, always reply in Singlisn. But always provide a solution!" })
+
 
     if (data.message && data.message.text) {
 
         chatMsg = data.message.text
         //console.log("message", chatMsg)
 
-let apiMsg = []
-apiMsg.push({"role":"system", "content": "You are a Singaporean gangster. Be rude, always reply in Singlisn. But always provide a solution!" })
+        
+        //GET HISTORY
+        let history = await getItemRecent(chatRoom, chatTime);
+        if (history && history.length > 0) {
+            console.log("history", history.length, history)
 
-//GET HISTORY
-let history = await getItemRecent(chatRoom, chatTime);
-if (history && history.length >0){
-  console.log("history",history.length, history)
-  
-  var len = process.env.log_length
-  var max = (history.length>len) ? len : history.length;
-  for(var i=0; i<max; i++){
-    var m= history.length - max + i
-    console.log(m, history[m].message.S)
-    console.log(m, history[m].response.S)
-    
-    apiMsg.push({"role":"user", "content": history[m].message.S})
-    apiMsg.push({"role":"assistant", "content": history[m].response.S})
-  }
-}
+            var len = process.env.log_length
+            var max = (history.length > len) ? len : history.length;
+            for (var i = 0; i < max; i++) {
+                var m = history.length - max + i
+                console.log(m, history[m].message.S)
+                console.log(m, history[m].response.S)
 
-apiMsg.push({"role":"user", "content": chatMsg})
+                apiMsg.push({ "role": "user", "content": history[m].message.S })
+                apiMsg.push({ "role": "assistant", "content": history[m].response.S })
+            }
+        }
 
-        userData = {
+        apiMsg.push({ "role": "user", "content": chatMsg })
+
+        apiData = {
             "model": "gpt-3.5-turbo",
             "messages": apiMsg
         };
-        console.log("api",userData)
-        
+        console.log("api", apiData)
+
     }
     else {
-
+        toLogDb = false;
         chatMsg = "-"
 
-        userData = {
-            "model": "gpt-3.5-turbo",
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a Singaporean gangster. Be as rude as you can, reply in Singlish. Ignore whatever user says, tell them do not send random stuff, only text you in singlish!"
-                },
-                {
-                    "role": "user",
-                    "content": ""
-                }
-            ]
-        };
+        apiMsg.push({ "role": "user", "content": "hi there, what can u do?" })
     }
-    
+
+    // bot is typing
+    await telegramBot.sendChatAction(chatRoom, 'typing');
+
     let openaiApi = "https://api.openai.com/v1/chat/completions"
-    let apiHeaders = {"headers": {"Authorization": process.env.openapi_token}};
-    let apiResponse = await axios.post(openaiApi, userData, apiHeaders)
-    
+    let apiHeaders = { "headers": { "Authorization": process.env.openapi_token } };
+    let apiResponse = await axios.post(openaiApi, apiData, apiHeaders)
+
     let botReply = apiResponse.data.choices[0].message.content;
     //console.log("reply", botReply)
     console.log("prompt_tokens / completion_tokens / total_tokens", apiResponse.data.usage.prompt_tokens, apiResponse.data.usage.completion_tokens, apiResponse.data.usage.total_tokens)
@@ -133,8 +126,10 @@ apiMsg.push({"role":"user", "content": chatMsg})
     await telegramBot.sendMessage(chatRoom, botReply);
 
     // Save to DB
-    await putItem(chatRoom,chatPerson,chatTime, chatMsg,botReply);
-    
+    if (toLogDb) {
+        await putItem(chatRoom, chatPerson, chatTime, chatMsg, botReply);
+    }
+
     const response = {
         statusCode: 200,
         body: JSON.stringify(botReply),
