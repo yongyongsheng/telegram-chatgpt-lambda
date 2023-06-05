@@ -1,5 +1,6 @@
 import axios from "axios";
 import telegram from "node-telegram-bot-api"
+import DynamoDB from "aws-sdk";
 
 export const handler = async(event) => {
     
@@ -18,7 +19,7 @@ export const handler = async(event) => {
             "messages": [
                 {
                     "role": "system",
-                    "content": "Use Singlish but be extremely helpful"
+                    "content": "You are a Singaporean gangster. Be rude, always reply in Singlisn. But always provide a solution!"
                 },
                 { "role":"user", "content": data.message.text }
             ]
@@ -48,6 +49,31 @@ export const handler = async(event) => {
     console.log("reply", botReply)
     console.log("prompt_tokens / completion_tokens / total_tokens", apiResponse.data.usage.prompt_tokens, apiResponse.data.usage.completion_tokens, apiResponse.data.usage.total_tokens)
     
+
+    let ddb = new DynamoDB({
+        apiVersion: '2012-08-10',
+        region: 'ap-southeast-1'
+    });
+    var params = {
+        TableName: 'siginna-chat',
+        Item: {
+            'ids' : {S: '001'},
+            'chat_id' : {S: 'Richard Roe'},
+            'first_name': {S: ''},
+            'time' : {N: 12312},
+            'message': {S: ''},
+            'response': {S: ''}
+        }
+    };
+
+    // Call DynamoDB to add the item to the table
+    await ddb.putItem(params, function(err, data) {
+        if (err) {
+            console.log("DDB Error", err);
+        } else {
+            console.log("DDB Success", data);
+        }
+    });
     
     // Reply in TG
     await telegramBot.sendMessage(chatRoom, botReply);
