@@ -2,6 +2,55 @@ import axios from "axios";
 import telegram from "node-telegram-bot-api"
 import AWS from "aws-sdk";
 
+const ddb = new AWS.DynamoDB({
+    apiVersion: '2012-08-10',
+    region: 'ap-southeast-1'
+  });
+
+// async function getItemByIdAndBeforeTime(id, time) {
+//     let params = {
+//       TableName: "your-table-name",
+//       KeyConditionExpression: "id = :id AND #createdAt < :time",
+//       ExpressionAttributeNames: { "#createdAt": "createdAt" },
+//       ExpressionAttributeValues: {
+//         ":id": { S: id },
+//         ":time": { N: `${time}` }
+//       }
+//     };
+  
+//     try {
+//       let result = await dynamodb.query(params).promise();
+//       return result.Items;
+//     } catch (error) {
+//       console.log("Error retrieving item from DynamoDB: ", error);
+//     }
+// }
+
+async function putItem(chatRoom,chatPerson,chatTime, chatMsg,botReply){
+    let params = {
+        TableName: 'siginna-chat',
+        Item: {
+            "ids": {S: `${chatTime}` + '-' + `${chatRoom}`},
+            "chat_id": {S: `${chatRoom}`},
+            "first_name": {S: `${chatPerson}`},
+            "chat_time": {N: `${chatTime}`},
+
+            "message": {S: `${chatMsg}`}, 
+            "response": {S: `${botReply}`}
+        }
+    };
+    console.log("ddb_param", params)
+
+    // Call DynamoDB to add the item to the table
+    return await ddb.putItem(params, function(err, data) {
+        if (err) {
+            console.log("DDB Error", err);
+        } else {
+            console.log("DDB Success", data);
+        }
+    });
+}
+
 export const handler = async(event) => {
     
     let userData
@@ -58,39 +107,12 @@ export const handler = async(event) => {
     let botReply = apiResponse.data.choices[0].message.content;
     console.log("reply", botReply)
     console.log("prompt_tokens / completion_tokens / total_tokens", apiResponse.data.usage.prompt_tokens, apiResponse.data.usage.completion_tokens, apiResponse.data.usage.total_tokens)
-    
 
-
-    let ddb = new AWS.DynamoDB({
-        apiVersion: '2012-08-10',
-        region: 'ap-southeast-1'
-      });
-
-    var params = {
-        TableName: 'siginna-chat',
-        Item: {
-            "ids": {S: `${chatTime}` + '-' + `${chatRoom}`},
-            "chat_id": {S: `${chatRoom}`},
-            "first_name": {S: `${chatPerson}`},
-            "chat_time": {N: `${chatTime}`},
-
-            "message": {S: `${chatMsg}`}, 
-            "response": {S: `${botReply}`}
-        }
-    };
-    console.log("ddb_param", params)
-
-    // Call DynamoDB to add the item to the table
-    await ddb.putItem(params, function(err, data) {
-        if (err) {
-            console.log("DDB Error", err);
-        } else {
-            console.log("DDB Success", data);
-        }
-    });
-    
     // Reply in TG
     await telegramBot.sendMessage(chatRoom, botReply);
+
+    // Save to DB
+    await putItem(chatRoom,chatPerson,chatTime, chatMsg,botReply);
     
     const response = {
         statusCode: 200,
