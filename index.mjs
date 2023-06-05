@@ -9,11 +9,18 @@ export const handler = async(event) => {
     console.log("inputData",data)
     
     let chatRoom = data.message.chat.id
+    let chatPerson = data.message.chat.first_name;
+    let chatTime = data.message.date;
+    let chatMsg;
+
     const telegramBot = new telegram(process.env.tg_token);
     await telegramBot.sendChatAction(chatRoom, 'typing');
 
     if (data.message && data.message.text) {
-        console.log("message", data.message.text)
+
+        chatMsg = data.message.text
+        
+        console.log("message", chatMsg)
         userData = {
             "model": "gpt-3.5-turbo",
             "messages": [
@@ -21,11 +28,14 @@ export const handler = async(event) => {
                     "role": "system",
                     "content": "You are a Singaporean gangster. Be rude, always reply in Singlisn. But always provide a solution!"
                 },
-                { "role":"user", "content": data.message.text }
+                { "role":"user", "content": chatMsg }
             ]
         };
     }
     else {
+
+        chatMsg = "-"
+
         userData = {
             "model": "gpt-3.5-turbo",
             "messages": [
@@ -63,12 +73,12 @@ export const handler = async(event) => {
     var params = {
         TableName: 'siginna-chat',
         Item: {
-            'ids' : {S: '001'},
-            'chat_id' : {S: 'Richard Roe'},
-            'first_name': {S: ''},
-            'time' : {N: 12312},
-            'message': {S: ''},
-            'response': {S: ''}
+            'ids' : {S: chatRoom+'-'+chatTime},
+            'chat_id' : {S: chatRoom},
+            'first_name': {S: chatPerson},
+            'time' : {N: chatTime},
+            'message': {S: chatMsg},
+            'response': {S: botReply}
         }
     };
 
