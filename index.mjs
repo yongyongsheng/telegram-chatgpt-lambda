@@ -80,8 +80,8 @@ if (history && history.length >0){
   
   for(var i=0; i<3; i++){
     var m= history.length - i -1
-    console.log(m, history[m].message)
-    console.log(m, history[m].response)
+    console.log(m, history[m].message.S)
+    console.log(m, history[m].response.S)
   }
 }
     
