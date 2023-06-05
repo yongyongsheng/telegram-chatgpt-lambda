@@ -116,7 +116,7 @@ export const handler = async (event) => {
             Text: chatMsg, 
         };
           
-        let loc = locationService.searchPlaceIndexForText(params).promise();
+        let loc = await locationService.searchPlaceIndexForText(params).promise();
         console.log("location", loc)
 
 
