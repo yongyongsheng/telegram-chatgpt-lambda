@@ -102,8 +102,6 @@ export const handler = async (event) => {
     }
     else if (data.message && data.message.location) {
 
-
-        toLogDb = false;
         let params = {
             IndexName: 'whyys_places',
             Position: [data.message.location.longitude,data.message.location.latitude],
@@ -127,8 +125,6 @@ export const handler = async (event) => {
             apiMsg.push({ "role": "user", "content": "be nice and helpful." + chatMsg + " tell me the district, town, city and country. where am i?" })
             apiMsg.push({ "role": "system", "content": "tell user his exact location and ask what he does want?" })
         }
-
-
 
     }
     else {
