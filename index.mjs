@@ -79,7 +79,7 @@ if (history && history.length >0){
   console.log("history",history.length, history)
   
   for(var i=0; i<3; i++){
-    var m= history.length - i
+    var m= history.length - i -1
     console.log(m, history[m].message)
     console.log(m, history[m].response)
   }
