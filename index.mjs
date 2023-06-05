@@ -97,29 +97,30 @@ export const handler = async (event) => {
 
         apiMsg.push({ "role": "user", "content": chatMsg })
 
-        apiData = {
-            "model": "gpt-3.5-turbo",
-            "messages": apiMsg
-        };
-        console.log("api", apiData)
-
     }
     else {
         toLogDb = false;
         chatMsg = "-"
 
-        apiMsg.push({ "role": "user", "content": "hi there, what can u do?" })
+        apiMsg.push({ "role": "system", "content": "remind user to stop sending nonsense and type in singlish if they need help" })
     }
+
 
     // bot is typing
     await telegramBot.sendChatAction(chatRoom, 'typing');
 
-    let openaiApi = "https://api.openai.com/v1/chat/completions"
+
+    apiData = {
+        "model": "gpt-3.5-turbo",
+        "messages": apiMsg
+    };
+    console.log("apiData", apiData);
+
+    let openaiApi = "https://api.openai.com/v1/chat/completions";
     let apiHeaders = { "headers": { "Authorization": process.env.openapi_token } };
-    let apiResponse = await axios.post(openaiApi, apiData, apiHeaders)
+    let apiResponse = await axios.post(openaiApi, apiData, apiHeaders);
 
     let botReply = apiResponse.data.choices[0].message.content;
-    //console.log("reply", botReply)
     console.log("prompt_tokens / completion_tokens / total_tokens", apiResponse.data.usage.prompt_tokens, apiResponse.data.usage.completion_tokens, apiResponse.data.usage.total_tokens)
 
     // Reply in TG
@@ -129,6 +130,7 @@ export const handler = async (event) => {
     if (toLogDb) {
         await putItem(chatRoom, chatPerson, chatTime, chatMsg, botReply);
     }
+
 
     const response = {
         statusCode: 200,
