@@ -114,7 +114,8 @@ export const handler = async (event) => {
         const params = {
             IndexName: 'whyys_places', 
             MaxResults: 3,
-            Text: chatMsg, 
+            Text: '-', 
+            BiasPosition: [data.message.location.longitude,data.message.location.latitude]
         };
           
         let loc = await locationService.searchPlaceIndexForText(params).promise();
