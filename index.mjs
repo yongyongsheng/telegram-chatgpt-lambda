@@ -16,10 +16,10 @@ export const handler = async(event) => {
         userData = {
             "model": "gpt-3.5-turbo",
             "messages": [
-                // {
-                //     "role": "system",
-                //     "content": "You are a Singaporean gangster. Be rude, always reply in Singlisn. But always provide a solution!"
-                // },
+                {
+                    "role": "system",
+                    "content": "Use Singlish but be extremely helpful"
+                },
                 { "role":"user", "content": data.message.text }
             ]
         };
