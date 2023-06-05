@@ -102,21 +102,32 @@ export const handler = async (event) => {
     }
     else if (data.message && data.message.location) {
 
-        chatMsg = "my latitude "+data.message.location.latitude+" and longitude is "+data.message.location.longitude+"."
-
-        apiMsg.push({ "role": "user", "content": "be nice and helpful." + chatMsg + "tell me the district, town, city and country" })
-        apiMsg.push({ "role": "system", "content": "tell user his location and ask what he want?" })
-
-
 
         toLogDb = false;
         let params = {
             IndexName: 'whyys_places',
-            Position: [data.message.location.longitude,data.message.location.latitude]
+            Position: [data.message.location.longitude,data.message.location.latitude],
+            MaxResults: 1
         };
           
         let loc = await locationService.searchPlaceIndexForPosition(params).promise();
-        console.log("location", JSON.stringify(loc))
+        if (loc && loc.Results) {
+            let place = loc.Results[0].Place;
+            console.log("location", JSON.stringify(place))
+            console.log("PostalCode", place.PostalCode)
+
+            chatMsg = place.AddressNumber +", "+ place.Street +", "+ place.Municipality +", "+ place.Country +" "+ place.PostalCode
+            apiMsg.push({ "role": "user", "content": "i am at " + chatMsg})
+            apiMsg.push({ "role": "system", "content": "tell user he is at "+chatMsg+" and ask what he does want?" })
+        }
+        else {
+            // Fall back to hope that GPT can give location
+            chatMsg = "my latitude "+data.message.location.latitude+" and longitude is "+data.message.location.longitude+"."
+
+            apiMsg.push({ "role": "user", "content": "be nice and helpful." + chatMsg + " tell me the district, town, city and country. where am i?" })
+            apiMsg.push({ "role": "system", "content": "tell user his exact location and ask what he does want?" })
+        }
+
 
 
     }
