@@ -65,17 +65,27 @@ export const handler = async(event) => {
     let chatTime = data.message.date;
     let chatMsg;
 
-    let history = await getItemRecent(chatRoom, chatTime);
-    console.log("history",history)
-
     const telegramBot = new telegram(process.env.tg_token);
     await telegramBot.sendChatAction(chatRoom, 'typing');
 
     if (data.message && data.message.text) {
 
         chatMsg = data.message.text
-        
-        console.log("message", chatMsg)
+        //console.log("message", chatMsg)
+
+//GET HISTORY
+let history = await getItemRecent(chatRoom, chatTime);
+if (history && history.length >0){
+  console.log("history",history.length, history)
+  
+  for(var i=0; i<3; i++){
+    var m= history.length - i
+    console.log(m, history[m].message)
+    console.log(m, history[m].response)
+  }
+}
+    
+
         userData = {
             "model": "gpt-3.5-turbo",
             "messages": [
@@ -111,7 +121,7 @@ export const handler = async(event) => {
     let apiResponse = await axios.post(openaiApi, userData, apiHeaders)
     
     let botReply = apiResponse.data.choices[0].message.content;
-    console.log("reply", botReply)
+    //console.log("reply", botReply)
     console.log("prompt_tokens / completion_tokens / total_tokens", apiResponse.data.usage.prompt_tokens, apiResponse.data.usage.completion_tokens, apiResponse.data.usage.total_tokens)
 
     // Reply in TG
