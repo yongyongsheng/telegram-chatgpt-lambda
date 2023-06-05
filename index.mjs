@@ -1,6 +1,6 @@
 import axios from "axios";
 import telegram from "node-telegram-bot-api"
-import DynamoDB from "aws-sdk";
+import AWS from "aws-sdk";
 
 export const handler = async(event) => {
     
@@ -50,10 +50,16 @@ export const handler = async(event) => {
     console.log("prompt_tokens / completion_tokens / total_tokens", apiResponse.data.usage.prompt_tokens, apiResponse.data.usage.completion_tokens, apiResponse.data.usage.total_tokens)
     
 
-    let ddb = new DynamoDB({
+
+    let ddb = new AWS.DynamoDB({
         apiVersion: '2012-08-10',
         region: 'ap-southeast-1'
-    });
+      });
+
+    // let ddb = new DynamoDB({
+    //     apiVersion: '2012-08-10',
+    //     region: 'ap-southeast-1'
+    // });
     var params = {
         TableName: 'siginna-chat',
         Item: {
