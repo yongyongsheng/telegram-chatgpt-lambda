@@ -21,7 +21,7 @@ async function getItemRecent(chat_id, chat_time_now) {
     console.log("get1", params)
   
     try {
-      let result = await dynamodb.query(params).promise();
+      let result = await ddb.query(params).promise();
       console.log("get2", result)
       return result.Items;
     } catch (error) {
@@ -43,14 +43,24 @@ async function putItem(chat_id,first_name,chat_time, message,response){
         }
     };
     
-    // Call DynamoDB to add the item to the table
-    return await ddb.putItem(params, function(err, data) {
-        if (err) {
-            console.log("DDB Error", err);
-        } else {
-            //console.log("DDB Success", data);
-        }
-    });
+    // Call DynamoDB to add the item to the 
+    try {
+        await ddb.putItem(params).promise();
+        console.log("put", params)
+        return true;
+      } catch (error) {
+        console.log("Error retrieving item from DynamoDB: ", error);
+      }
+
+    // await ddb.putItem(params, function(err, data) {
+    //     if (err) {
+    //         console.log("DDB Error", err);
+    //     } else {
+    //         //console.log("DDB Success", data);
+    //     }
+    // });
+
+    return
 }
 
 export const handler = async(event) => {
