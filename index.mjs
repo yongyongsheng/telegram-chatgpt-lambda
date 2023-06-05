@@ -73,6 +73,9 @@ export const handler = async(event) => {
         chatMsg = data.message.text
         //console.log("message", chatMsg)
 
+let apiMsg = []
+apiMsg.push({"role":"system", "content": "You are a Singaporean gangster. Be rude, always reply in Singlisn. But always provide a solution!" })
+
 //GET HISTORY
 let history = await getItemRecent(chatRoom, chatTime);
 if (history && history.length >0){
@@ -85,18 +88,15 @@ if (history && history.length >0){
     console.log(m, history[m].response.S)
   }
 }
-    
+
+apiMsg.push({"role":"user", "content": chatMsg})
 
         userData = {
             "model": "gpt-3.5-turbo",
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a Singaporean gangster. Be rude, always reply in Singlisn. But always provide a solution!"
-                },
-                { "role":"user", "content": chatMsg }
-            ]
+            "messages": apiMsg
         };
+        console.log("api",userData)
+        
     }
     else {
 
