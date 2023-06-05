@@ -7,7 +7,8 @@ const ddb = new AWS.DynamoDB({
     region: 'ap-southeast-1'
   });
 
-async function getItemRecent(chat_id, chat_time) {
+async function getItemRecent(chat_id, chat_time_now) {
+    let chat_time = chat_time_now - 3600;
     let params = {
       TableName: "siginna-chat",
       KeyConditionExpression: "chat_id = :chat_id AND #chat_time < :chat_time",
@@ -17,9 +18,11 @@ async function getItemRecent(chat_id, chat_time) {
         ":chat_time": { N: `${chat_time}` }
       }
     };
+    console.log("get1", params)
   
     try {
       let result = await dynamodb.query(params).promise();
+      console.log("get2", result)
       return result.Items;
     } catch (error) {
       console.log("Error retrieving item from DynamoDB: ", error);
