@@ -10,7 +10,7 @@ const ddb = new AWS.DynamoDB({
 async function getItemRecent(chat_id, chat_time_now) {
     let chat_time = chat_time_now - 3600;
     let params = {
-      TableName: "siginna-chat",
+      TableName: "si-ginna-convo",
       KeyConditionExpression: "chat_id = :chat_id AND #chat_time > :chat_time",
       ExpressionAttributeNames: { "#chat_time": "chat_time" },
       ExpressionAttributeValues: {
@@ -31,9 +31,9 @@ async function getItemRecent(chat_id, chat_time_now) {
 
 async function putItem(chat_id,first_name,chat_time, message,response){
     let params = {
-        TableName: 'siginna-chat',
+        TableName: 'si-ginna-convo',
         Item: {
-            "ids": {S: `${chat_time}` + '-' + `${chat_id}`},
+            //"ids": {S: `${chat_time}` + '-' + `${chat_id}`},
             "chat_id": {S: `${chat_id}`},
             "first_name": {S: `${first_name}`},
             "chat_time": {N: `${chat_time}`},
