@@ -74,13 +74,14 @@ export const handler = async(event) => {
         TableName: 'siginna-chat',
         Item: {
             'ids' : {S: chatRoom+'-'+chatTime},
-            'chat_id' : {S: "chatRoom"},
-            'first_name': {S: "chatPerson"},
-            'time' : {N: "chatTime"},
+            'chat_id' : {S: `chatRoom`},
+            'first_name': {S: `chatPerson`},
+            'time' : {N: chatTime},
             'message': {S: chatMsg},
             'response': {S: botReply}
         }
     };
+    console.log("ddb_param", params)
 
     // Call DynamoDB to add the item to the table
     await ddb.putItem(params, function(err, data) {
