@@ -97,11 +97,11 @@ export const handler = async (event) => {
 
     }
     else if (data.message && data.message.location) {
-        
-        chatMsg = "my latitude "+data.message.latitude+" and longitude is "+data.message.longitude+"."
+
+        chatMsg = "my latitude "+data.message.location.latitude+" and longitude is "+data.message.location.longitude+"."
 
         apiMsg.push({ "role": "user", "content": "be nice and helpful." + chatMsg + "tell me the district, town, city and country" })
-        apiMsg.push({ "role": "system", "content": "ask user what he want?" })
+        apiMsg.push({ "role": "system", "content": "tell user his location and ask what he want?" })
     }
     else {
         toLogDb = false;
