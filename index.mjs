@@ -75,9 +75,7 @@ export const handler = async (event) => {
     if (data.message && data.message.text) {
 
         chatMsg = data.message.text
-        //console.log("message", chatMsg)
-
-        
+ 
         //GET HISTORY
         let history = await getItemRecent(chatRoom, chatTime);
         if (history && history.length > 0) {
@@ -98,11 +96,16 @@ export const handler = async (event) => {
         apiMsg.push({ "role": "user", "content": chatMsg })
 
     }
+    else if (data.message && data.message.location) {
+        
+        chatMsg = "my latitude "+data.message.latitude+" and longitude is "+data.message.longitude+"."
+
+        apiMsg.push({ "role": "user", "content": "be nice and helpful." + chatMsg + "tell me the district, town, city and country" })
+        apiMsg.push({ "role": "system", "content": "ask user what he want?" })
+    }
     else {
         toLogDb = false;
-        chatMsg = "-"
-
-        apiMsg.push({ "role": "system", "content": "remind user to stop sending nonsense and type in singlish if they need help" })
+        apiMsg.push({ "role": "system", "content": "ask user what he want?" })
     }
 
 
