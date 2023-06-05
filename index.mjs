@@ -7,6 +7,10 @@ const ddb = new AWS.DynamoDB({
     region: 'ap-southeast-1'
 });
 
+const locationService = new AWS.Location({
+    region: 'ap-southeast-1'
+});
+
 const telegramBot = new telegram(process.env.tg_token);
 
 async function getItemRecent(chat_id, chat_time_now) {
@@ -102,6 +106,20 @@ export const handler = async (event) => {
 
         apiMsg.push({ "role": "user", "content": "be nice and helpful." + chatMsg + "tell me the district, town, city and country" })
         apiMsg.push({ "role": "system", "content": "tell user his location and ask what he want?" })
+
+
+
+        toLogDb = false;
+
+        const params = {
+            IndexName: 'whyys_places', 
+            Text: chatMsg, 
+        };
+          
+        let loc = locationService.searchPlaceIndexForText(params).promise();
+        console.log("location", loc)
+
+
     }
     else {
         toLogDb = false;
