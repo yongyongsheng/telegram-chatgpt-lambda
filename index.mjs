@@ -65,15 +65,12 @@ export const handler = async(event) => {
         apiVersion: '2012-08-10',
         region: 'ap-southeast-1'
       });
+    let documentClient = new ddb.DocumentClient();
 
-    // let ddb = new DynamoDB({
-    //     apiVersion: '2012-08-10',
-    //     region: 'ap-southeast-1'
-    // });
     var params = {
         TableName: 'siginna-chat',
         Item: {
-            "ids": `${chatRoom}` + '-' + `${chatTime}`,
+            "ids": `${chatTime}` + '-' + `${chatRoom}`,
             "chat_id": `${chatRoom}`,
             "first_name": `${chatPerson}`,
             "chat_time": chatTime,
@@ -85,7 +82,7 @@ export const handler = async(event) => {
     console.log("ddb_param", params)
 
     // Call DynamoDB to add the item to the table
-    await ddb.putItem(params, function(err, data) {
+    await documentClient.put(params, function(err, data) {
         if (err) {
             console.log("DDB Error", err);
         } else {
