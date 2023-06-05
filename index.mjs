@@ -11,10 +11,10 @@ async function getItemRecent(chat_id, chat_time_now) {
     let chat_time = chat_time_now - 3600;
     let params = {
       TableName: "siginna-chat",
-      KeyConditionExpression: "chat_id = :chat_id AND #chat_time < :chat_time",
+      KeyConditionExpression: "chat_id = :chat_id AND #chat_time > :chat_time",
       ExpressionAttributeNames: { "#chat_time": "chat_time" },
       ExpressionAttributeValues: {
-        ":chat_id": { S: chat_id },
+        ":chat_id": { S: `${chat_id}` },
         ":chat_time": { N: `${chat_time}` }
       }
     };
@@ -46,19 +46,10 @@ async function putItem(chat_id,first_name,chat_time, message,response){
     // Call DynamoDB to add the item to the 
     try {
         await ddb.putItem(params).promise();
-        console.log("put", params)
         return true;
-      } catch (error) {
-        console.log("Error retrieving item from DynamoDB: ", error);
-      }
-
-    // await ddb.putItem(params, function(err, data) {
-    //     if (err) {
-    //         console.log("DDB Error", err);
-    //     } else {
-    //         //console.log("DDB Success", data);
-    //     }
-    // });
+    } catch (error) {
+        console.log("Error put to DynamoDB: ", error);
+    }
 
     return
 }
