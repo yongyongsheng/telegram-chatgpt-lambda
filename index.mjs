@@ -112,13 +112,12 @@ export const handler = async (event) => {
         toLogDb = false;
 
         const params = {
-            IndexName: 'whyys_places', 
-            MaxResults: 3,
-            Text: '-', 
-            BiasPosition: [data.message.location.longitude,data.message.location.latitude]
+            IndexName: 'whyys_places',
+            Position:  [data.message.location.longitude,data.message.location.latitude],
+            MaxResults: 3
         };
           
-        let loc = await locationService.searchPlaceIndexForText(params).promise();
+        let loc = await locationService.SearchPlaceIndexForPosition(params).promise();
         console.log("location", JSON.stringify(loc))
 
 
