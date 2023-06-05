@@ -18,11 +18,11 @@ async function getItemRecent(chat_id, chat_time_now) {
         ":chat_time": { N: `${chat_time}` }
       }
     };
-    console.log("get1", params)
+    //console.log("get1", params)
   
     try {
       let result = await ddb.query(params).promise();
-      console.log("get2", result)
+      //=console.log("get2", result)
       return result.Items;
     } catch (error) {
       console.log("Error retrieving item from DynamoDB: ", error);
