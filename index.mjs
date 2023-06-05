@@ -113,11 +113,12 @@ export const handler = async (event) => {
 
         const params = {
             IndexName: 'whyys_places', 
+            MaxResults: 3,
             Text: chatMsg, 
         };
           
         let loc = await locationService.searchPlaceIndexForText(params).promise();
-        console.log("location", loc)
+        console.log("location", JSON.stringify(loc))
 
 
     }
