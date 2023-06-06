@@ -114,7 +114,10 @@ export const handler = async (event) => {
             console.log("location", JSON.stringify(place))
             console.log("PostalCode", place.PostalCode)
 
-            chatMsg = place.AddressNumber +", "+ place.Street +", "+ place.Municipality +", "+ place.Country +" "+ place.PostalCode
+            chatMsg = place.AddressNumber +", "
+            if (place.Street) chatMsg += place.Street +", "
+            if (place.Municipality) chatMsg += place.Municipality +", "
+            chatMsg += place.Country +" "+ place.PostalCode
             apiMsg.push({ "role": "user", "content": "i am at " + chatMsg})
             apiMsg.push({ "role": "system", "content": "tell user he is at "+chatMsg+" and ask what he does want?" })
         }
