@@ -141,7 +141,7 @@ export const handler = async (event) => {
 
 
     apiData = {
-        "model": "gpt-3.5-turbo",
+        "model": process.env.openai_model,
         "messages": apiMsg
     };
     console.log("apiData", apiData);
