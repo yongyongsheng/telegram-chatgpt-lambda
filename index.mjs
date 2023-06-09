@@ -140,6 +140,11 @@ export const handler = async (event) => {
       //file_unique_id: 'AgAD9AwAAmM0GFQ',
       //file_size: 50312
     
+    let c = await telegram.downloadFile(data.voice.file_id. "/var/etc/")
+    toLogDb = false;
+    apiMsg.push({ "role": "system", "content": "say u dun understand him?" })
+    console.log(c)
+    
     }
     else {
         toLogDb = false;
