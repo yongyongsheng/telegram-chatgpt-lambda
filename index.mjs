@@ -132,7 +132,7 @@ export const handler = async (event) => {
         }
 
     }
-    else if (data.voice){
+    else if (data.message && data.message.voice){
     //voice: {
       //duration: 2,
       //mime_type: 'audio/ogg',
