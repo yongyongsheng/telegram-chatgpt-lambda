@@ -132,6 +132,15 @@ export const handler = async (event) => {
         }
 
     }
+    else if (data.voice){
+    //voice: {
+      //duration: 2,
+      //mime_type: 'audio/ogg',
+      //file_id: 'AwACAgUAAxkBAAICT2SC9GdY9FGI7oN4An4-uS4ribRlAAL0DAACYzQYVDrVtxWFumDlLwQ',
+      //file_unique_id: 'AgAD9AwAAmM0GFQ',
+      //file_size: 50312
+    
+    }
     else {
         toLogDb = false;
         apiMsg.push({ "role": "system", "content": "ask user what he want?" })
