@@ -140,7 +140,7 @@ export const handler = async (event) => {
       //file_unique_id: 'AgAD9AwAAmM0GFQ',
       //file_size: 50312
     
-    let c = await telegramBot.downloadFile(data.message.voice.file_id, "var/etc/")
+    let c = await telegramBot.downloadFile(data.message.voice.file_id, "/tmp/")
     toLogDb = false;
     apiMsg.push({ "role": "system", "content": "say u dun understand him?" })
     console.log(c)
