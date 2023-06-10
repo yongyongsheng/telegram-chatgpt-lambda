@@ -12,6 +12,9 @@ const ddb = new AWS.DynamoDB({
 const locationService = new AWS.Location({
     region: 'ap-southeast-1'
 });
+const transcribeService = new AWS.TranscribeService({
+    region: 'ap-southeast-1'
+});
 
 const telegramBot = new telegram(process.env.tg_token);
 
@@ -145,6 +148,36 @@ export const handler = async (event) => {
     apiMsg.push({ "role": "system", "content": "say u dun understand him?" })
     console.log(c)
     
+    
+    const transcriptionJobName = 'TranscriptionJob-' + Date.now();
+
+  var params = {
+    TranscriptionJobName: transcriptionJobName,
+    LanguageCode: 'en-US',
+    MediaFormat: 'oga', // specify the input media format
+    Media: {
+      MediaFileUri: c //event.mediaFileUri // the URL of the input media file
+    },
+    OutputBucketName: 'event.outputBucketName', //the bucket where you want to store the text file.
+    Settings: {
+      MaxSpeakerLabels: 2,
+      ShowSpeakerLabels: true
+    }
+  };
+
+  try {
+    const data = await transcribeService.startTranscriptionJob(params).promise();
+    console.log('Transcription Job started...', JSON.stringify(data));
+
+    const job = await transcribeService.getTranscriptionJob({ 
+      TranscriptionJobName: transcriptionJobName 
+    }).promise();
+    console.log('Transcription Job status: ' + job.TranscriptionJob.TranscriptionJobStatus);
+  } catch (err) {
+    console.log('Error transcribing audio: ', err);
+    throw new Error(err);
+  }
+
     }
     else {
         toLogDb = false;
