@@ -140,20 +140,11 @@ export const handler = async (event) => {
 
     }
     else if (data.message && data.message.voice) {
-        // voice: {
-        //     duration: 2,
-        //     mime_type: 'audio/ogg',
-        //     file_id: 'AwACAgUAAxkBAAICT2SC9GdY9FGI7oN4An4-uS4ribRlAAL0DAACYzQYVDrVtxWFumDlLwQ',
-        //     file_unique_id: 'AgAD9AwAAmM0GFQ',
-        //     file_size: 50312
-        // }
-
-
         // Download audio file from TG
         toLogDb = false;
         voiceSucceed = false;
-        let jobId = Date.now() +'-'+ data.message.voice.file_unique_id;
-        let dlAudioPath = await telegramBot.downloadFile(data.message.voice.file_id, "/tmp/")  
+        let jobId = Date.now() + '-' + data.message.voice.file_unique_id;
+        let dlAudioPath = await telegramBot.downloadFile(data.message.voice.file_id, "/tmp/")
 
         // Upload into S3 
         let s3Param = {
@@ -163,10 +154,11 @@ export const handler = async (event) => {
             ContentType: data.message.voice.mime_type,
             ACL: 'private', //Setting the file permission
         };
-        let s3result = await s3Service.upload(s3Param).promise(); 
-        if (s3result){
+        let s3result = await s3Service.upload(s3Param).promise();
+        if (s3result) {
 
             // Call transcribe 
+            let tscpJob
             let tscpParams = {
                 TranscriptionJobName: jobId,
                 LanguageCode: 'en-US',
@@ -176,16 +168,15 @@ export const handler = async (event) => {
                 },
                 OutputBucketName: 'ys-machinelearning', //the bucket where you want to store the text file.
                 OutputKey: 'siginna/transcribe/' + jobId + '.json',
-                Settings: { 
+                Settings: {
                     ShowSpeakerLabels: false
                 }
             };
             let tscpStart = await transcribeService.startTranscriptionJob(tscpParams).promise();
             console.log('0 START', tscpStart)
             await new Promise(resolve => setTimeout(resolve, 5000));
-            let tscpJob
 
-            for (var i=0; i<60; i++){
+            for (var i = 0; i < 60; i++) {
                 tscpJob = await transcribeService.getTranscriptionJob({
                     TranscriptionJobName: jobId
                 }).promise();
@@ -200,7 +191,7 @@ export const handler = async (event) => {
             }
 
             if (tscpJob.TranscriptionJob.TranscriptionJobStatus == 'COMPLETED') {
-                // Get message from JSON 
+                // Transcribe job compeleted, read the message from JSON file
                 let s3GetParams = {
                     Bucket: 'ys-machinelearning',
                     Key: 'siginna/transcribe/' + jobId + '.json'
@@ -210,19 +201,20 @@ export const handler = async (event) => {
                 console.log("voiceData", JSON.stringify(voiceData))
 
                 if (voiceData && voiceData.results) {
-                    voiceSucceed = true;
                     let voiceMessage = '';
-
-                    for(var i=0; i< voiceData.results.transcripts.length; i++){
+                    for (var i = 0; i < voiceData.results.transcripts.length; i++) {
                         console.log(voiceData.results.transcripts[i]);
                         voiceMessage += voiceData.results.transcripts[i].transcript + " ";
                     }
-                    await telegramBot.sendMessage(chatRoom, "You: "+ voiceMessage);
+                    await telegramBot.sendMessage(chatRoom, "You: " + voiceMessage);
+
+                    voiceSucceed = true;
                 }
             }
-            
-        
-        if (!voiceSucceed){
+        }
+
+
+        if (!voiceSucceed) {
             apiMsg.push({ "role": "system", "content": "Apologize that you cannot understand his voice message and he should try again or send you in text." })
         }
 
@@ -264,4 +256,4 @@ export const handler = async (event) => {
         body: JSON.stringify(botReply),
     };
     return response;
-};
+}
