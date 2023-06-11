@@ -180,14 +180,15 @@ export const handler = async (event) => {
                 }
             };
             let tscpStart = await transcribeService.startTranscriptionJob(tscpParams).promise();
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            console.log('0 START', tscpStart)
+            await new Promise(resolve => setTimeout(resolve, 5000));
             let tscpJob
 
             for (var i=0; i<60; i++){
                 tscpJob = await transcribeService.getTranscriptionJob({
                     TranscriptionJobName: jobId
                 }).promise();
-                console.log(i, tscpJob.TranscriptionJob.TranscriptionJobStatus)
+                console.log(i + ' JOB', tscpJob.TranscriptionJob.TranscriptionJobStatus)
                 if (tscpJob.TranscriptionJob.TranscriptionJobStatus == 'COMPLETED' || tscpJob.TranscriptionJob.TranscriptionJobStatus == 'FAILED') {
                     console.log("tscpJob", i, tscpJob);
                     break;
@@ -198,7 +199,14 @@ export const handler = async (event) => {
             }
 
             if (tscpJob.TranscriptionJob.TranscriptionJobStatus == 'COMPLETED') {
-
+                // Get message from JSON 
+                let s3GetParams = {
+                    Bucket: 'ys-machinelearning',
+                    Key: 'siginna/transcribe/' + jobId + '.json'
+                };
+                let voiceFile = await s3.getObject(s3GetParams).promise();
+                let voiceData = data.Body.toString('utf-8');
+                console.log(voiceData);
             }
             else {
                 apiMsg.push({ "role": "system", "content": "Apologize that you cannot understand his voice and he should try again." })
