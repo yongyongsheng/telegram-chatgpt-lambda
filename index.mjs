@@ -19,6 +19,7 @@ const transcribeService = new AWS.TranscribeService({
 const s3Service = new AWS.S3({
     region: 'ap-southeast-1'
 });
+const lambdaService = new AWS.Lambda();
 
 const telegramBot = new telegram(process.env.tg_token);
 
@@ -123,12 +124,45 @@ export const handler = async (event) => {
             console.log("location", JSON.stringify(place))
             console.log("PostalCode", place.PostalCode)
 
-            chatMsg = place.AddressNumber + ", "
-            if (place.Street) chatMsg += place.Street + ", "
-            if (place.Municipality) chatMsg += place.Municipality + ", "
-            chatMsg += place.Country + " " + place.PostalCode
-            apiMsg.push({ "role": "user", "content": "i am at " + chatMsg })
-            apiMsg.push({ "role": "system", "content": "tell user he is at " + chatMsg + " and ask what he does want?" })
+            let locText = place.AddressNumber + ", "
+            if (place.Street) locText += place.Street + ", "
+            if (place.Municipality) locText += place.Municipality + ", "
+            locText += place.Country + " " + place.PostalCode
+
+                            // Check if you have blog content about nearby shops?
+                            let lambdaParams = {
+                                FunctionName: 'eatluh-location', // the lambda function we are going to invoke
+                                InvocationType: 'RequestResponse',
+                                LogType: 'Tail',
+                                Payload: '{ "postal" : "'+ place.PostalCode +'" }'
+                            };
+                            let mappedBlogs = await lambdaService.invoke(lambdaParams).promise();
+                            console.log("mappedBlogs",mappedBlogs)
+
+                            // , function(err, data) {
+                            //     if (err) {
+                            //         console.log(err)
+                            //     } else {
+                            //         let blogs = JSON.parse(data.Payload);
+                            //         console.log('Blogs '+blogs.length+': '+ blogs);
+                                    
+                            //         if (blogs.length > 0){
+                            //             userProfile.last_resp_type = 'MAP_BLOG'
+                            //             correctContent = "You're at "+streetName+" ("+postal+"). People have blogged about...\n\n"
+                                        
+                            //             for(var i=0; i<blogs.length && i<15; i++){ 
+                            //                 correctContent += "- <a href='" + blogs[i].url + "'>" + blogs[i].title + "</a> \n"
+                            //             }
+                                        
+                            //             correctContent += "\nOr you can give me some keywords (i.e. chicken rice, waffles, mala tang, etc) and I'll suggest something else.."
+                            //         }
+                            //     }
+                            // }
+
+            chatMsg = locText;
+
+            apiMsg.push({ "role": "user", "content": "i am at " + locText })
+            apiMsg.push({ "role": "system", "content": "tell user he is at " + locText + " and ask what he does want?" })
         }
         else {
             // Fall back to hope that GPT can give location
