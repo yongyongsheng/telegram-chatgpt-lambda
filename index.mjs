@@ -144,11 +144,11 @@ export const handler = async (event) => {
 
                 let blogs = '';
                 for(var i=0; i<arrBlogs.length && i<5; i++){ 
-                    blogs += arrBlogs[i].url + ' ';
+                    blogs += arrBlogs[i].url + ' , ';
                     console.log(arrBlogs[i]);
                 }
                 
-                apiMsg.push({ "role": "system", "content": "Summarize from the following websites and make few recommendations: " + blogs })
+                apiMsg.push({ "role": "system", "content": "Based on content in " + blogs + " , recommend places near to " + chatMsg + " and quote the websites."})
             }
             else {
                 apiMsg.push({ "role": "system", "content": "Tell user his location is " + locText + " and ask him what he wants to find out about the location?" })
