@@ -143,10 +143,11 @@ export const handler = async (event) => {
                 let urlBlogs = '';
                 if (arrBlogs.length > 0) { 
                     for(var i=0; i<arrBlogs.length && i<5; i++){ 
-                        urlBlogs += arrBlogs[i].url + ' , '; 
+                        if (arrBlogs[i].url)
+                            urlBlogs += arrBlogs[i].url + ' , '; 
                     }
-                    console.log( (i+1) + " Blogs", urlBlogs)
-                    apiMsg.push({ "role": "system", "content": "Only based on content written in " + urlBlogs + " recommend no more than 5 food places near to '" + chatMsg + "' and quote the websites."})
+                    console.log( arrBlogs.length + " blogs found", urlBlogs)
+                    apiMsg.push({ "role": "system", "content": "Only based on content written in " + urlBlogs + " recommend no more than 5 food places that are near to '" + chatMsg + "' and quote the websites and address."})
                 }
                 else {
                     apiMsg.push({ "role": "system", "content": "Tell user his location is " + locText + " and ask him what he wants to find out about the location?" })
