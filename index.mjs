@@ -142,19 +142,20 @@ export const handler = async (event) => {
                 let arrBlogs = JSON.parse(mappedBlogs.Payload);
                 let urlBlogs = '';
                 if (arrBlogs.length > 0) { 
-                    for(var i=0; i<arrBlogs.length && i<5; i++){ 
+                    let x = (arrBlogs.length>5) ? 5 : arrBlogs.length;
+                    for(var i=0; i<x; i++){ 
                         if (arrBlogs[i].url)
                             urlBlogs += arrBlogs[i].url + ' , '; 
                     }
                     console.log( arrBlogs.length + " blogs found", urlBlogs)
-                    apiMsg.push({ "role": "system", "content": "Only based on content written in " + urlBlogs + " recommend less than 6 food places that are near to '" + chatMsg + "' and quote the address and the blog url."})
+                    apiMsg.push({ "role": "system", "content": "Only based on content written in " + urlBlogs + " recommend no more than "+ x +" food places that are near to '" + chatMsg + "' and quote the address and the blog url."})
                 }
                 else {
-                    apiMsg.push({ "role": "system", "content": "Tell user his location is " + chatMsg + " is very rural and there is no blog about food places near here." })
+                    apiMsg.push({ "role": "system", "content": "Tell user his location at " + chatMsg + " is very rural and there is no blog about food places near here." })
                 }
             }
             else {
-                apiMsg.push({ "role": "system", "content": "Tell user his location is " + chatMsg + " and ask him what he wants to find out about the location?" })
+                apiMsg.push({ "role": "system", "content": "Ask user what is he doing at " + chatMsg + "." })
             }
         
         }
