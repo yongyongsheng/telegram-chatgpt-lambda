@@ -142,7 +142,7 @@ export const handler = async (event) => {
     else if (data.message && data.message.voice) {
         // Download audio file from TG
         toLogDb = false;
-        voiceSucceed = false;
+        let voiceSucceed = false;
         let jobId = Date.now() + '-' + data.message.voice.file_unique_id;
         let dlAudioPath = await telegramBot.downloadFile(data.message.voice.file_id, "/tmp/")
 
