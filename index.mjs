@@ -147,7 +147,7 @@ export const handler = async (event) => {
                             urlBlogs += arrBlogs[i].url + ' , '; 
                     }
                     console.log( arrBlogs.length + " blogs found", urlBlogs)
-                    apiMsg.push({ "role": "system", "content": "Only based on content written in " + urlBlogs + " recommend no more than 5 food places that are near to '" + chatMsg + "' and quote the websites and address."})
+                    apiMsg.push({ "role": "system", "content": "Only based on content written in " + urlBlogs + " recommend less than 6 food places that are near to '" + chatMsg + "' and quote the address and the blog url."})
                 }
                 else {
                     apiMsg.push({ "role": "system", "content": "Tell user his location is " + locText + " and ask him what he wants to find out about the location?" })
