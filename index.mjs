@@ -148,7 +148,7 @@ export const handler = async (event) => {
                     console.log(arrBlogs[i]);
                 }
                 
-                apiMsg.push({ "role": "system", "content": "Based on content in " + blogs + " , recommend places near to " + chatMsg + " and quote the websites."})
+                apiMsg.push({ "role": "system", "content": "Based on content in " + blogs + " recommend no more than 5 places near to '" + chatMsg + "' and quote the websites."})
             }
             else {
                 apiMsg.push({ "role": "system", "content": "Tell user his location is " + locText + " and ask him what he wants to find out about the location?" })
