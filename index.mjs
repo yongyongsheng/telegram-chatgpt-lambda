@@ -148,10 +148,10 @@ export const handler = async (event) => {
         //     file_size: 50312
         // }
 
-        let file_unique_id = data.message.voice.file_unique_id;
 
         // Download audio file from TG
         toLogDb = false;
+        let file_unique_id = data.message.voice.file_unique_id;
         let dlAudioPath = await telegramBot.downloadFile(data.message.voice.file_id, "/tmp/")  
 
         // Upload into S3 
@@ -160,7 +160,7 @@ export const handler = async (event) => {
             Key: 'siginna/telegram/' + file_unique_id + '.ogg',
             Body: fs.readFileSync(dlAudioPath),
             ContentType: data.message.voice.mime_type,
-            ACL: 'public-read', //Setting the file permission
+            ACL: 'private', //Setting the file permission
         };
         let s3result = await s3Service.upload(s3Param).promise(); 
         console.log(s3result);
@@ -172,7 +172,7 @@ export const handler = async (event) => {
             LanguageCode: 'en-US',
             MediaFormat: 'ogg', // specify the input media format
             Media: {
-                MediaFileUri: dlAudioPath //event.mediaFileUri // the URL of the input media file
+                MediaFileUri: 's3://ys-machinelearning/' + 'siginna/telegram/' + file_unique_id + '.ogg' //event.mediaFileUri // the URL of the input media file
             },
             OutputBucketName: 'ys-machinelearning', //the bucket where you want to store the text file.
             OutputKey: 'siginna/transcribe',
