@@ -206,7 +206,8 @@ export const handler = async (event) => {
                 };
                 let voiceFile = await s3Service.getObject(s3GetParams).promise();
                 let voiceData = voiceFile.Body.toString('utf-8');
-                console.log(voiceData.results.transcripts.transcript);
+                console.log("voiceData", voiceData)
+                console.log(voiceData.results.transcripts[0].transcript);
             }
             else {
                 apiMsg.push({ "role": "system", "content": "Apologize that you cannot understand his voice and he should try again." })
