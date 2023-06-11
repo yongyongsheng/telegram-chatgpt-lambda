@@ -152,7 +152,7 @@ export const handler = async (event) => {
         let params = {
             TranscriptionJobName: transcriptionJobName,
             LanguageCode: 'en-US',
-            MediaFormat: 'oga', // specify the input media format
+            MediaFormat: 'ogg', // specify the input media format
             Media: {
                 MediaFileUri: dlAudioPath //event.mediaFileUri // the URL of the input media file
             },
