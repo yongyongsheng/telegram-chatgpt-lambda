@@ -150,7 +150,8 @@ export const handler = async (event) => {
 
 
         // Download audio file from TG
-        toLogDb = false; 
+        toLogDb = false;
+        voiceSucceed = false;
         let jobId = Date.now() +'-'+ data.message.voice.file_unique_id;
         let dlAudioPath = await telegramBot.downloadFile(data.message.voice.file_id, "/tmp/")  
 
@@ -206,16 +207,23 @@ export const handler = async (event) => {
                 };
                 let voiceFile = await s3Service.getObject(s3GetParams).promise();
                 let voiceData = JSON.parse(voiceFile.Body.toString('utf-8'));
-                console.log("voiceData", voiceData)
-                console.log(voiceData.results.transcripts[0].transcript);
-            }
-            else {
-                apiMsg.push({ "role": "system", "content": "Apologize that you cannot understand his voice and he should try again." })
+                console.log("voiceData", JSON.stringify(voiceData))
+
+                if (voiceData && voiceData.results) {
+                    voiceSucceed = true;
+                    let voiceMessage = '';
+
+                    for(var i=0; i< voiceData.results.transcripts.length; i++){
+                        console.log(voiceData.results.transcripts[i]);
+                        voiceMessage += voiceData.results.transcripts[i].transcript + " ";
+                    }
+                    await telegramBot.sendMessage(chatRoom, "You: "+ voiceMessage);
+                }
             }
             
-        }
-        else {
-            apiMsg.push({ "role": "system", "content": "Apologize that you cannot understand his voice and he should try again." })
+        
+        if (!voiceSucceed){
+            apiMsg.push({ "role": "system", "content": "Apologize that you cannot understand his voice message and he should try again or send you in text." })
         }
 
     }
