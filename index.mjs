@@ -139,10 +139,10 @@ export const handler = async (event) => {
                 Payload: '{ "postal" : "'+ place.PostalCode +'" }'
             };
             let mappedBlogs = await lambdaService.invoke(lambdaParams).promise();
-            if (mappedBlogs){
+            if (mappedBlogs && mappedBlogs.Payload){
                 let blogs = '';
-                for(var i=0; i<mappedBlogs.length && i<5; i++){ 
-                    blogs += mappedBlogs[i].url + ' ';
+                for(var i=0; i<mappedBlogs.Payload.length && i<5; i++){ 
+                    blogs += mappedBlogs.Payload[i].url + ' ';
                 }
                 console.log(chatMsg);
                 console.log(blogs);
