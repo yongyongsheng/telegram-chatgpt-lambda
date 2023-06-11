@@ -129,6 +129,7 @@ export const handler = async (event) => {
             if (place.Municipality) chatMsg += place.Municipality + ", "
             chatMsg += place.Country + " " + place.PostalCode
 
+            console.log("chatMsg", chatMsg);
             apiMsg.push({ "role": "user", "content": "i am at " + chatMsg })
 
             // Check if you have blog content about nearby shops?
@@ -140,12 +141,15 @@ export const handler = async (event) => {
             };
             let mappedBlogs = await lambdaService.invoke(lambdaParams).promise();
             if (mappedBlogs && mappedBlogs.Payload){
+                console.log(mappedBlogs.Payload);
+
                 let blogs = '';
                 for(var i=0; i<mappedBlogs.Payload.length && i<5; i++){ 
+                    console.log(mappedBlogs.Payload[i]);
+                
                     blogs += mappedBlogs.Payload[i].url + ' ';
                 }
-                console.log(chatMsg);
-                console.log(blogs);
+                
                 apiMsg.push({ "role": "system", "content": "Make recommendations based on these blogs: " + blogs })
             }
             else {
