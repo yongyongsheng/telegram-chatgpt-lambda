@@ -150,49 +150,57 @@ export const handler = async (event) => {
 
 
         // Download audio file from TG
-        toLogDb = false;
-        let file_unique_id = data.message.voice.file_unique_id;
+        toLogDb = false; 
+        let jobId = Date.now() +'-'+ data.message.voice.file_unique_id;
         let dlAudioPath = await telegramBot.downloadFile(data.message.voice.file_id, "/tmp/")  
 
         // Upload into S3 
         let s3Param = {
             Bucket: 'ys-machinelearning',
-            Key: 'siginna/telegram/' + file_unique_id + '.ogg',
+            Key: 'siginna/telegram/' + jobId + '.ogg',
             Body: fs.readFileSync(dlAudioPath),
             ContentType: data.message.voice.mime_type,
             ACL: 'private', //Setting the file permission
         };
         let s3result = await s3Service.upload(s3Param).promise(); 
-        console.log(s3result);
+        if (s3result){
 
-        // Call transcribe
-        let transcriptionJobName = 'dlAudioPath-' + Date.now(); 
-        let params = {
-            TranscriptionJobName: transcriptionJobName,
-            LanguageCode: 'en-US',
-            MediaFormat: 'ogg', // specify the input media format
-            Media: {
-                MediaFileUri: 's3://ys-machinelearning/' + 'siginna/telegram/' + file_unique_id + '.ogg' //event.mediaFileUri // the URL of the input media file
-            },
-            OutputBucketName: 'ys-machinelearning', //the bucket where you want to store the text file.
-            OutputKey: 'siginna/transcribe/' + file_unique_id + '.json',
-            Settings: {
-                MaxSpeakerLabels: 2,
-                ShowSpeakerLabels: true
+            // Call transcribe 
+            let tscpParams = {
+                TranscriptionJobName: jobId,
+                LanguageCode: 'en-US',
+                MediaFormat: 'ogg', // specify the input media format
+                Media: {
+                    MediaFileUri: 's3://ys-machinelearning/' + 'siginna/telegram/' + jobId + '.ogg' //event.mediaFileUri // the URL of the input media file
+                },
+                OutputBucketName: 'ys-machinelearning', //the bucket where you want to store the text file.
+                OutputKey: 'siginna/transcribe/' + jobId + '.json',
+                Settings: { 
+                    ShowSpeakerLabels: false
+                }
+            };
+            let tscpStart = await transcribeService.startTranscriptionJob(tscpParams).promise();
+
+            for (var i=0; i<60; i++){
+                let tscpJob = await transcribeService.getTranscriptionJob({
+                    TranscriptionJobName: jobId
+                }).promise();
+                if (tscpJob.TranscriptionJob.TranscriptionJobStatus == 'COMPLETED' || tscpJob.TranscriptionJob.TranscriptionJobStatus == 'FAILED') {
+                    console.log("tscpJob", i, tscpJob);
+                    break;
+                }
             }
-        };
 
-        try {
-            const data = await transcribeService.startTranscriptionJob(params).promise();
-            console.log('Transcription Job started...', JSON.stringify(data));
+            if (tscpJob.TranscriptionJob.TranscriptionJobStatus == 'COMPLETED') {
 
-            const job = await transcribeService.getTranscriptionJob({
-                TranscriptionJobName: transcriptionJobName
-            }).promise();
-            console.log('Transcription Job status: ' + job.TranscriptionJob.TranscriptionJobStatus);
-        } catch (err) {
-            console.log('Error transcribing audio: ', err);
-            throw new Error(err);
+            }
+            else {
+                apiMsg.push({ "role": "system", "content": "Apologize that you cannot understand his voice and he should try again." })
+            }
+            
+        }
+        else {
+            apiMsg.push({ "role": "system", "content": "Apologize that you cannot understand his voice and he should try again." })
         }
 
     }
