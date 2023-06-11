@@ -147,7 +147,7 @@ export const handler = async (event) => {
         let dlAudioPath = await telegramBot.downloadFile(data.message.voice.file_id, "/tmp/")
 
         if (dlAudioPath){
-            await telegramBot.sendMessage(chatRoom, "System: Listening to voice message...");
+            await telegramBot.sendMessage(chatRoom, "Wahlau, listening to your voice message...");
 
             // Upload into S3 
             let s3Param = {
@@ -213,6 +213,7 @@ export const handler = async (event) => {
 
                         voiceSucceed = true;
                         toLogDb = true;
+
                         //START OF REUSE CODE FROM TEXT MESSAGE
                         let history = await getItemRecent(chatRoom, chatTime);
                         if (history && history.length > 0) {
