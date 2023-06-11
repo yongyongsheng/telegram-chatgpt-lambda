@@ -3,6 +3,7 @@
 import axios from "axios";
 import telegram from "node-telegram-bot-api"
 import AWS from "aws-sdk";
+import * as fs from 'fs';
 
 const ddb = new AWS.DynamoDB({
     apiVersion: '2012-08-10',
@@ -13,6 +14,9 @@ const locationService = new AWS.Location({
     region: 'ap-southeast-1'
 });
 const transcribeService = new AWS.TranscribeService({
+    region: 'ap-southeast-1'
+});
+const s3Service = new AWS.S3({
     region: 'ap-southeast-1'
 });
 
@@ -144,10 +148,24 @@ export const handler = async (event) => {
         //     file_size: 50312
         // }
 
-        toLogDb = false;
-        let dlAudioPath = await telegramBot.downloadFile(data.message.voice.file_id, "/tmp/") 
-        console.log("dlAudioPath",dlAudioPath)
+        let file_unique_id = data.message.voice.file_unique_id;
 
+        // Download audio file from TG
+        toLogDb = false;
+        let dlAudioPath = await telegramBot.downloadFile(data.message.voice.file_id, "/tmp/")  
+
+        // Upload into S3 
+        let s3Param = {
+            Bucket: 'ys-machinelearning',
+            Key: 'siginna/telegram/' + file_unique_id + '.ogg',
+            Body: fs.readFileSync(dlAudioPath),
+            ContentType: data.message.voice.mime_type,
+            ACL: 'public-read', //Setting the file permission
+        };
+        let s3result = await s3.upload(params).promise(); 
+        console.log(s3result);
+
+        // Call transcribe
         let transcriptionJobName = 'dlAudioPath-' + Date.now(); 
         let params = {
             TranscriptionJobName: transcriptionJobName,
@@ -157,6 +175,7 @@ export const handler = async (event) => {
                 MediaFileUri: dlAudioPath //event.mediaFileUri // the URL of the input media file
             },
             OutputBucketName: 'ys-machinelearning', //the bucket where you want to store the text file.
+            OutputKey: 'siginna/transcribe',
             Settings: {
                 MaxSpeakerLabels: 2,
                 ShowSpeakerLabels: true
