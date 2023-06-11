@@ -204,7 +204,7 @@ export const handler = async (event) => {
                     Bucket: 'ys-machinelearning',
                     Key: 'siginna/transcribe/' + jobId + '.json'
                 };
-                let voiceFile = await s3.getObject(s3GetParams).promise();
+                let voiceFile = await s3Service.getObject(s3GetParams).promise();
                 let voiceData = data.Body.toString('utf-8');
                 console.log(voiceData);
             }
