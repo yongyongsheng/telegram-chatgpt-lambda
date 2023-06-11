@@ -150,7 +150,7 @@ export const handler = async (event) => {
                     apiMsg.push({ "role": "system", "content": "Only based on content written in " + urlBlogs + " recommend less than 6 food places that are near to '" + chatMsg + "' and quote the address and the blog url."})
                 }
                 else {
-                    apiMsg.push({ "role": "system", "content": "Tell user his location is " + chatMsg + " and ask him what he wants to find out about the location?" })
+                    apiMsg.push({ "role": "system", "content": "Tell user his location is " + chatMsg + " is very rural and there is no blog about food places near here." })
                 }
             }
             else {
