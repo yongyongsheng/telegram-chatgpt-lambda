@@ -175,7 +175,7 @@ export const handler = async (event) => {
                 MediaFileUri: 's3://ys-machinelearning/' + 'siginna/telegram/' + file_unique_id + '.ogg' //event.mediaFileUri // the URL of the input media file
             },
             OutputBucketName: 'ys-machinelearning', //the bucket where you want to store the text file.
-            OutputKey: 'siginna/transcribe',
+            OutputKey: 'siginna/transcribe/' + file_unique_id + '.json',
             Settings: {
                 MaxSpeakerLabels: 2,
                 ShowSpeakerLabels: true
