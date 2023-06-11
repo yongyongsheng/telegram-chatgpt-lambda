@@ -121,15 +121,14 @@ export const handler = async (event) => {
         let loc = await locationService.searchPlaceIndexForPosition(params).promise();
         if (loc && loc.Results) {
             let place = loc.Results[0].Place;
-            console.log("location", JSON.stringify(place))
-            console.log("PostalCode", place.PostalCode)
+            console.log("Address returned from locationService", JSON.stringify(place))
 
             chatMsg = place.AddressNumber + ", "
             if (place.Street) chatMsg += place.Street + ", "
             if (place.Municipality) chatMsg += place.Municipality + ", "
             chatMsg += place.Country + " " + place.PostalCode
 
-            apiMsg.push({ "role": "user", "content": "i am at " + chatMsg })
+            apiMsg.push({ "role": "user", "content": "My address now is " + chatMsg })
 
             // Check if you have blog content about nearby shops?
             let lambdaParams = {
@@ -141,14 +140,17 @@ export const handler = async (event) => {
             let mappedBlogs = await lambdaService.invoke(lambdaParams).promise();
             if (mappedBlogs && mappedBlogs.Payload){
                 let arrBlogs = JSON.parse(mappedBlogs.Payload);
-
-                let blogs = '';
-                for(var i=0; i<arrBlogs.length && i<5; i++){ 
-                    blogs += arrBlogs[i].url + ' , ';
-                    console.log(arrBlogs[i]);
+                let urlBlogs = '';
+                if (arrBlogs.length > 0) { 
+                    for(var i=0; i<arrBlogs.length && i<5; i++){ 
+                        urlBlogs += arrBlogs[i].url + ' , '; 
+                    }
+                    console.log( (i+1) + " Blogs", urlBlogs)
+                    apiMsg.push({ "role": "system", "content": "Only based on content written in " + urlBlogs + " recommend no more than 5 food places near to '" + chatMsg + "' and quote the websites."})
                 }
-                
-                apiMsg.push({ "role": "system", "content": "Based on content in " + blogs + " recommend no more than 5 places near to '" + chatMsg + "' and quote the websites."})
+                else {
+                    apiMsg.push({ "role": "system", "content": "Tell user his location is " + locText + " and ask him what he wants to find out about the location?" })
+                }
             }
             else {
                 apiMsg.push({ "role": "system", "content": "Tell user his location is " + locText + " and ask him what he wants to find out about the location?" })
