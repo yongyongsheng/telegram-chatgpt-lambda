@@ -162,7 +162,7 @@ export const handler = async (event) => {
             ContentType: data.message.voice.mime_type,
             ACL: 'public-read', //Setting the file permission
         };
-        let s3result = await s3Service.upload(params).promise(); 
+        let s3result = await s3Service.upload(s3Param).promise(); 
         console.log(s3result);
 
         // Call transcribe
