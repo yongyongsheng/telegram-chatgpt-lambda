@@ -205,7 +205,7 @@ export const handler = async (event) => {
                     Key: 'siginna/transcribe/' + jobId + '.json'
                 };
                 let voiceFile = await s3Service.getObject(s3GetParams).promise();
-                let voiceData = data.Body.toString('utf-8');
+                let voiceData = voiceFile.Body.toString('utf-8');
                 console.log(voiceData);
             }
             else {
