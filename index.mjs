@@ -180,11 +180,13 @@ export const handler = async (event) => {
                 }
             };
             let tscpStart = await transcribeService.startTranscriptionJob(tscpParams).promise();
+            let tscpJob
 
             for (var i=0; i<60; i++){
-                let tscpJob = await transcribeService.getTranscriptionJob({
+                tscpJob = await transcribeService.getTranscriptionJob({
                     TranscriptionJobName: jobId
                 }).promise();
+                console.log(i, tscpJob.TranscriptionJob.TranscriptionJobStatus)
                 if (tscpJob.TranscriptionJob.TranscriptionJobStatus == 'COMPLETED' || tscpJob.TranscriptionJob.TranscriptionJobStatus == 'FAILED') {
                     console.log("tscpJob", i, tscpJob);
                     break;
