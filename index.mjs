@@ -129,7 +129,6 @@ export const handler = async (event) => {
             if (place.Municipality) chatMsg += place.Municipality + ", "
             chatMsg += place.Country + " " + place.PostalCode
 
-            console.log("chatMsg", chatMsg);
             apiMsg.push({ "role": "user", "content": "i am at " + chatMsg })
 
             // Check if you have blog content about nearby shops?
@@ -145,12 +144,11 @@ export const handler = async (event) => {
 
                 let blogs = '';
                 for(var i=0; i<arrBlogs.length && i<5; i++){ 
-                    console.log(arrBlogs[i]);
-                
                     blogs += arrBlogs[i].url + ' ';
+                    console.log(arrBlogs[i]);
                 }
                 
-                apiMsg.push({ "role": "system", "content": "Make recommendations based on these blogs: " + blogs })
+                apiMsg.push({ "role": "system", "content": "Summarize from the following websites and make few recommendations: " + blogs })
             }
             else {
                 apiMsg.push({ "role": "system", "content": "Tell user his location is " + locText + " and ask him what he wants to find out about the location?" })
