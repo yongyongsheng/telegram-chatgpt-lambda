@@ -84,7 +84,7 @@ export const handler = async (event) => {
     if (data.message && data.message.text) {
 
         chatMsg = data.message.text
- 
+
         //GET HISTORY
         let history = await getItemRecent(chatRoom, chatTime);
         if (history && history.length > 0) {
@@ -109,74 +109,72 @@ export const handler = async (event) => {
 
         let params = {
             IndexName: 'whyys_places',
-            Position: [data.message.location.longitude,data.message.location.latitude],
+            Position: [data.message.location.longitude, data.message.location.latitude],
             MaxResults: 1
         };
-          
+
         let loc = await locationService.searchPlaceIndexForPosition(params).promise();
         if (loc && loc.Results) {
             let place = loc.Results[0].Place;
             console.log("location", JSON.stringify(place))
             console.log("PostalCode", place.PostalCode)
 
-            chatMsg = place.AddressNumber +", "
-            if (place.Street) chatMsg += place.Street +", "
-            if (place.Municipality) chatMsg += place.Municipality +", "
-            chatMsg += place.Country +" "+ place.PostalCode
-            apiMsg.push({ "role": "user", "content": "i am at " + chatMsg})
-            apiMsg.push({ "role": "system", "content": "tell user he is at "+chatMsg+" and ask what he does want?" })
+            chatMsg = place.AddressNumber + ", "
+            if (place.Street) chatMsg += place.Street + ", "
+            if (place.Municipality) chatMsg += place.Municipality + ", "
+            chatMsg += place.Country + " " + place.PostalCode
+            apiMsg.push({ "role": "user", "content": "i am at " + chatMsg })
+            apiMsg.push({ "role": "system", "content": "tell user he is at " + chatMsg + " and ask what he does want?" })
         }
         else {
             // Fall back to hope that GPT can give location
-            chatMsg = "my latitude "+data.message.location.latitude+" and longitude is "+data.message.location.longitude+"."
+            chatMsg = "my latitude " + data.message.location.latitude + " and longitude is " + data.message.location.longitude + "."
 
             apiMsg.push({ "role": "user", "content": "be nice and helpful." + chatMsg + " tell me the district, town, city and country. where am i?" })
             apiMsg.push({ "role": "system", "content": "tell user his exact location and ask what he does want?" })
         }
 
     }
-    else if (data.message && data.message.voice){
-    //voice: {
-      //duration: 2,
-      //mime_type: 'audio/ogg',
-      //file_id: 'AwACAgUAAxkBAAICT2SC9GdY9FGI7oN4An4-uS4ribRlAAL0DAACYzQYVDrVtxWFumDlLwQ',
-      //file_unique_id: 'AgAD9AwAAmM0GFQ',
-      //file_size: 50312
-    
-    let c = await telegramBot.downloadFile(data.message.voice.file_id, "/tmp/")
-    toLogDb = false;
-    apiMsg.push({ "role": "system", "content": "say u dun understand him?" })
-    console.log(c)
-    
-    
-    const transcriptionJobName = 'TranscriptionJob-' + Date.now();
+    else if (data.message && data.message.voice) {
+        // voice: {
+        //     duration: 2,
+        //     mime_type: 'audio/ogg',
+        //     file_id: 'AwACAgUAAxkBAAICT2SC9GdY9FGI7oN4An4-uS4ribRlAAL0DAACYzQYVDrVtxWFumDlLwQ',
+        //     file_unique_id: 'AgAD9AwAAmM0GFQ',
+        //     file_size: 50312
+        // }
 
-  var params = {
-    TranscriptionJobName: transcriptionJobName,
-    LanguageCode: 'en-US',
-    MediaFormat: 'oga', // specify the input media format
-    Media: {
-      MediaFileUri: c //event.mediaFileUri // the URL of the input media file
-    },
-    OutputBucketName: 'event.outputBucketName', //the bucket where you want to store the text file.
-    Settings: {
-      MaxSpeakerLabels: 2,
-      ShowSpeakerLabels: true
-    }
-  };
+        toLogDb = false;
+        let dlAudioPath = await telegramBot.downloadFile(data.message.voice.file_id, "/tmp/") 
+        console.log("dlAudioPath",dlAudioPath)
 
-  try {
-    const data = await transcribeService.startTranscriptionJob(params).promise();
-    console.log('Transcription Job started...', JSON.stringify(data));
+        let transcriptionJobName = 'dlAudioPath-' + Date.now(); 
+        let params = {
+            TranscriptionJobName: transcriptionJobName,
+            LanguageCode: 'en-US',
+            MediaFormat: 'oga', // specify the input media format
+            Media: {
+                MediaFileUri: dlAudioPath //event.mediaFileUri // the URL of the input media file
+            },
+            OutputBucketName: 'ys-machinelearning', //the bucket where you want to store the text file.
+            Settings: {
+                MaxSpeakerLabels: 2,
+                ShowSpeakerLabels: true
+            }
+        };
 
-    const job = await transcribeService.getTranscriptionJob({ 
-      TranscriptionJobName: transcriptionJobName 
-    }).promise();
-    console.log('Transcription Job status: ' + job.TranscriptionJob.TranscriptionJobStatus);
-  } catch (err) {
-    console.log('Error transcribing audio: ', err);
-    throw new Error(err);
-  }
+        try {
+            const data = await transcribeService.startTranscriptionJob(params).promise();
+            console.log('Transcription Job started...', JSON.stringify(data));
+
+            const job = await transcribeService.getTranscriptionJob({
+                TranscriptionJobName: transcriptionJobName
+            }).promise();
+            console.log('Transcription Job status: ' + job.TranscriptionJob.TranscriptionJobStatus);
+        } catch (err) {
+            console.log('Error transcribing audio: ', err);
+            throw new Error(err);
+        }
 
     }
     else {
