@@ -146,69 +146,92 @@ export const handler = async (event) => {
         let jobId = Date.now() + '-' + data.message.voice.file_unique_id;
         let dlAudioPath = await telegramBot.downloadFile(data.message.voice.file_id, "/tmp/")
 
-        // Upload into S3 
-        let s3Param = {
-            Bucket: 'ys-machinelearning',
-            Key: 'siginna/telegram/' + jobId + '.ogg',
-            Body: fs.readFileSync(dlAudioPath),
-            ContentType: data.message.voice.mime_type,
-            ACL: 'private', //Setting the file permission
-        };
-        let s3result = await s3Service.upload(s3Param).promise();
-        if (s3result) {
+        if (dlAudioPath){
+            await telegramBot.sendMessage(chatRoom, "System: Listening to voice message...");
 
-            // Call transcribe 
-            let tscpJob
-            let tscpParams = {
-                TranscriptionJobName: jobId,
-                LanguageCode: 'en-US',
-                MediaFormat: 'ogg', // specify the input media format
-                Media: {
-                    MediaFileUri: 's3://ys-machinelearning/' + 'siginna/telegram/' + jobId + '.ogg' //event.mediaFileUri // the URL of the input media file
-                },
-                OutputBucketName: 'ys-machinelearning', //the bucket where you want to store the text file.
-                OutputKey: 'siginna/transcribe/' + jobId + '.json',
-                Settings: {
-                    ShowSpeakerLabels: false
-                }
+            // Upload into S3 
+            let s3Param = {
+                Bucket: 'ys-machinelearning',
+                Key: 'siginna/telegram/' + jobId + '.ogg',
+                Body: fs.readFileSync(dlAudioPath),
+                ContentType: data.message.voice.mime_type,
+                ACL: 'private', //Setting the file permission
             };
-            let tscpStart = await transcribeService.startTranscriptionJob(tscpParams).promise();
-            console.log('0 START', tscpStart)
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            let s3result = await s3Service.upload(s3Param).promise();
+            if (s3result) {
 
-            for (var i = 0; i < 60; i++) {
-                tscpJob = await transcribeService.getTranscriptionJob({
-                    TranscriptionJobName: jobId
-                }).promise();
-                console.log(i + ' JOB', tscpJob.TranscriptionJob.TranscriptionJobStatus)
-                if (tscpJob.TranscriptionJob.TranscriptionJobStatus == 'COMPLETED' || tscpJob.TranscriptionJob.TranscriptionJobStatus == 'FAILED') {
-                    console.log("tscpJob", i, tscpJob);
-                    break;
-                }
-                else {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-            }
-
-            if (tscpJob.TranscriptionJob.TranscriptionJobStatus == 'COMPLETED') {
-                // Transcribe job compeleted, read the message from JSON file
-                let s3GetParams = {
-                    Bucket: 'ys-machinelearning',
-                    Key: 'siginna/transcribe/' + jobId + '.json'
-                };
-                let voiceFile = await s3Service.getObject(s3GetParams).promise();
-                let voiceData = JSON.parse(voiceFile.Body.toString('utf-8'));
-                console.log("voiceData", JSON.stringify(voiceData))
-
-                if (voiceData && voiceData.results) {
-                    let voiceMessage = '';
-                    for (var i = 0; i < voiceData.results.transcripts.length; i++) {
-                        console.log(voiceData.results.transcripts[i]);
-                        voiceMessage += voiceData.results.transcripts[i].transcript + " ";
+                // Call transcribe 
+                let tscpJob
+                let tscpParams = {
+                    TranscriptionJobName: jobId,
+                    LanguageCode: 'en-US',
+                    MediaFormat: 'ogg', // specify the input media format
+                    Media: {
+                        MediaFileUri: 's3://ys-machinelearning/' + 'siginna/telegram/' + jobId + '.ogg' //event.mediaFileUri // the URL of the input media file
+                    },
+                    OutputBucketName: 'ys-machinelearning', //the bucket where you want to store the text file.
+                    OutputKey: 'siginna/transcribe/' + jobId + '.json',
+                    Settings: {
+                        ShowSpeakerLabels: false
                     }
-                    await telegramBot.sendMessage(chatRoom, "You: " + voiceMessage);
+                };
+                let tscpStart = await transcribeService.startTranscriptionJob(tscpParams).promise();
+                console.log('0 START', tscpStart)
+                await new Promise(resolve => setTimeout(resolve, 5000));
 
-                    voiceSucceed = true;
+                for (var i = 0; i < 60; i++) {
+                    tscpJob = await transcribeService.getTranscriptionJob({
+                        TranscriptionJobName: jobId
+                    }).promise();
+                    console.log(i + ' JOB', tscpJob.TranscriptionJob.TranscriptionJobStatus)
+                    if (tscpJob.TranscriptionJob.TranscriptionJobStatus == 'COMPLETED' || tscpJob.TranscriptionJob.TranscriptionJobStatus == 'FAILED') {
+                        console.log("tscpJob", i, tscpJob);
+                        break;
+                    }
+                    else {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+
+                if (tscpJob.TranscriptionJob.TranscriptionJobStatus == 'COMPLETED') {
+                    // Transcribe job compeleted, read the message from JSON file
+                    let s3GetParams = {
+                        Bucket: 'ys-machinelearning',
+                        Key: 'siginna/transcribe/' + jobId + '.json'
+                    };
+                    let voiceFile = await s3Service.getObject(s3GetParams).promise();
+                    let voiceData = JSON.parse(voiceFile.Body.toString('utf-8'));
+                    console.log("voiceData", JSON.stringify(voiceData))
+
+                    if (voiceData && voiceData.results) {
+                        chatMsg = '';
+                        for (var i = 0; i < voiceData.results.transcripts.length; i++) {
+                            console.log(voiceData.results.transcripts[i]);
+                            chatMsg += voiceData.results.transcripts[i].transcript + " ";
+                        }
+                        await telegramBot.sendMessage(chatRoom, "You: " + chatMsg);
+
+                        voiceSucceed = true;
+                        toLogDb = true;
+                        //START OF REUSE CODE FROM TEXT MESSAGE
+                        let history = await getItemRecent(chatRoom, chatTime);
+                        if (history && history.length > 0) {
+                            console.log("history", history.length, history)
+
+                            var len = process.env.log_length
+                            var max = (history.length > len) ? len : history.length;
+                            for (var i = 0; i < max; i++) {
+                                var m = history.length - max + i
+                                console.log(m, history[m].message.S)
+                                console.log(m, history[m].response.S)
+
+                                apiMsg.push({ "role": "user", "content": history[m].message.S })
+                                apiMsg.push({ "role": "assistant", "content": history[m].response.S })
+                            }
+                        }
+                        apiMsg.push({ "role": "user", "content": chatMsg })
+                        //END OF REUSE CODE FROM TEXT MESSAGE
+                    }
                 }
             }
         }
