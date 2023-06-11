@@ -141,13 +141,13 @@ export const handler = async (event) => {
             };
             let mappedBlogs = await lambdaService.invoke(lambdaParams).promise();
             if (mappedBlogs && mappedBlogs.Payload){
-                console.log(mappedBlogs.Payload);
+                let arrBlogs = JSON.parse(mappedBlogs.Payload);
 
                 let blogs = '';
-                for(var i=0; i<mappedBlogs.Payload.length && i<5; i++){ 
-                    console.log(mappedBlogs.Payload[i]);
+                for(var i=0; i<arrBlogs.length && i<5; i++){ 
+                    console.log(arrBlogs[i]);
                 
-                    blogs += mappedBlogs.Payload[i].url + ' ';
+                    blogs += arrBlogs[i].url + ' ';
                 }
                 
                 apiMsg.push({ "role": "system", "content": "Make recommendations based on these blogs: " + blogs })
