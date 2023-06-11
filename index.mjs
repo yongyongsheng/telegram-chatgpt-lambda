@@ -124,7 +124,7 @@ export const handler = async (event) => {
             console.log("location", JSON.stringify(place))
             console.log("PostalCode", place.PostalCode)
 
-            let chatMsg = place.AddressNumber + ", "
+            chatMsg = place.AddressNumber + ", "
             if (place.Street) chatMsg += place.Street + ", "
             if (place.Municipality) chatMsg += place.Municipality + ", "
             chatMsg += place.Country + " " + place.PostalCode
