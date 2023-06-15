@@ -336,7 +336,7 @@ export const handler = async (event) => {
     console.log(apiReplyMsg)
     
     if (apiReplyMsg.function_call) {
-        toLogDb = false;
+        //toLogDb = false;
 
         let res
         if ( apiReplyMsg.function_call.name == 'callLambdaWeather') {
