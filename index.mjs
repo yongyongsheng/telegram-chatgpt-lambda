@@ -88,7 +88,6 @@ export const handler = async (event) => {
     let data = JSON.parse(event.body)
     console.log("inputData", data)
 
-    let apiData
     let apiMsg = []
     let toLogDb = true;
 
@@ -311,7 +310,7 @@ export const handler = async (event) => {
             }
         }
     ]
-    gptData = {
+    let gptData = {
         "model": 'gpt-3.5-turbo-0613', //process.env.openai_model,
         "messages": apiMsg,
         "functions": apiFunc
