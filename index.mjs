@@ -36,6 +36,7 @@ async function callLambdaWeather(area=''){
     }
     
     return '';
+}
 
 async function getItemRecent(chat_id, chat_time_now) {
     let chat_time = chat_time_now - 3600;
@@ -306,7 +307,7 @@ export const handler = async (event) => {
                         "description": "Direction: north, south, east, west or empty",
                     }
                 },
-                "required": [],
+                "required": []
             }
         }
     ]
