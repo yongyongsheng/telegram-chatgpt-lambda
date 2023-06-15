@@ -344,11 +344,12 @@ export const handler = async (event) => {
         apiMsg.push({ 
             "role": "function", 
             "name": apiReplyMsg.function_call.name,
-            "content": res 
+            "content": JSON.stringify(res) 
         })
         gptData = {
             "model": 'gpt-3.5-turbo-0613', //process.env.openai_model,
-            "messages": apiMsg
+            "messages": apiMsg,
+            "functions": apiFunc
         };
         apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
         
