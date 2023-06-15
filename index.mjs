@@ -325,9 +325,7 @@ export const handler = async (event) => {
 
     let botReply = (apiReplyMsg.content) ? apiReplyMsg.content : 'I don\'t understand';
     
-    if (botReply.function_call) {
-        console.log( JSON.stringify(botReply.function_call) )
-    }
+    console.log( botReply.function_call )
 
     // Reply in TG
     await telegramBot.sendMessage(chatRoom, botReply);
