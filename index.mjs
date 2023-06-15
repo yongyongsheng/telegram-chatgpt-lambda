@@ -23,23 +23,25 @@ const lambdaService = new AWS.Lambda();
 
 const telegramBot = new telegram(process.env.tg_token);
 
-async function callLambdaWeather(arg=''){
-    let par = JSON.parse(arg)
-    let area = par.area;
+async function callLambdaWeather(arg){
 
-    let lambdaParams = {
-        FunctionName: 'qna-sgweahter', // the lambda function we are going to invoke
-        InvocationType: 'RequestResponse',
-        LogType: 'Tail',
-        Payload: '{ "area" : "'+ area +'" }'
-    };
-    let answer = await lambdaService.invoke(lambdaParams).promise();
-    if (answer && answer.Payload){
-        let r = JSON.parse(answer.Payload);
-        return r.body;
+    let payarg = JSON.parse(arg);
+    if (payarg.country.toLowerCase() == 'singapore') {
+
+        let lambdaParams = {
+            FunctionName: 'qna-sgweahter', // the lambda function we are going to invoke
+            InvocationType: 'RequestResponse',
+            LogType: 'Tail',
+            Payload: arg
+        };
+        let answer = await lambdaService.invoke(lambdaParams).promise();
+        if (answer && answer.Payload){
+            let r = JSON.parse(answer.Payload);
+            return r.body;
+        }
+        
     }
-    
-    return '';
+    return 'I do not know';
 }
 
 async function getItemRecent(chat_id, chat_time_now) {
@@ -305,6 +307,10 @@ export const handler = async (event) => {
             "parameters": {
                 "type": "object",
                 "properties": {
+                    "country": {
+                        "type": "string",
+                        "description": "Country, i.e. Singapore",
+                    },
                     "area": {
                         "type": "string",
                         "description": "Direction: north, south, east, west or empty",
