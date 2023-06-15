@@ -35,7 +35,8 @@ async function callLambdaWeather(arg=''){
     };
     let answer = await lambdaService.invoke(lambdaParams).promise();
     if (answer && answer.Payload){
-        return answer.Payload.body
+        let r = JSON.parse(answer.Payload);
+        return r.body;
     }
     
     return '';
