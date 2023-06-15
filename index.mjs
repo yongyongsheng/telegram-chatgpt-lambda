@@ -341,7 +341,11 @@ export const handler = async (event) => {
         console.log("Res", res)
 
         // Send the res back to gpt
-        apiMsg.push({ "role": "function", "content": res })
+        apiMsg.push({ 
+            "role": "function", 
+            "name": apiReplyMsg.function_call.name,
+            "content": res 
+        })
         gptData = {
             "model": 'gpt-3.5-turbo-0613', //process.env.openai_model,
             "messages": apiMsg,
