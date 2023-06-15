@@ -348,8 +348,7 @@ export const handler = async (event) => {
         })
         gptData = {
             "model": 'gpt-3.5-turbo-0613', //process.env.openai_model,
-            "messages": apiMsg,
-            "functions": apiFunc
+            "messages": apiMsg
         };
         apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
         
