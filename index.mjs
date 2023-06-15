@@ -106,14 +106,14 @@ export const handler = async (event) => {
         //GET HISTORY
         let history = await getItemRecent(chatRoom, chatTime);
         if (history && history.length > 0) {
-            console.log("history", history.length, history)
+            //console.log("history", history.length, history)
 
             var len = process.env.log_length
             var max = (history.length > len) ? len : history.length;
             for (var i = 0; i < max; i++) {
                 var m = history.length - max + i
-                console.log(m, history[m].message.S)
-                console.log(m, history[m].response.S)
+                // console.log(m, history[m].message.S)
+                // console.log(m, history[m].response.S)
 
                 apiMsg.push({ "role": "user", "content": history[m].message.S })
                 apiMsg.push({ "role": "assistant", "content": history[m].response.S })
@@ -134,7 +134,7 @@ export const handler = async (event) => {
         let loc = await locationService.searchPlaceIndexForPosition(params).promise();
         if (loc && loc.Results) {
             let place = loc.Results[0].Place;
-            console.log("Address returned from locationService", JSON.stringify(place))
+            // console.log("Address returned from locationService", JSON.stringify(place))
 
             chatMsg = place.AddressNumber + ", "
             if (place.Street) chatMsg += place.Street + ", "
@@ -218,16 +218,16 @@ export const handler = async (event) => {
                     }
                 };
                 let tscpStart = await transcribeService.startTranscriptionJob(tscpParams).promise();
-                console.log('0 START', tscpStart)
+                // console.log('0 START', tscpStart)
                 await new Promise(resolve => setTimeout(resolve, 5000));
 
                 for (var i = 0; i < 60; i++) {
                     tscpJob = await transcribeService.getTranscriptionJob({
                         TranscriptionJobName: jobId
                     }).promise();
-                    console.log(i + ' JOB', tscpJob.TranscriptionJob.TranscriptionJobStatus)
+                    // console.log(i + ' JOB', tscpJob.TranscriptionJob.TranscriptionJobStatus)
                     if (tscpJob.TranscriptionJob.TranscriptionJobStatus == 'COMPLETED' || tscpJob.TranscriptionJob.TranscriptionJobStatus == 'FAILED') {
-                        console.log("tscpJob", i, tscpJob);
+                        // console.log("tscpJob", i, tscpJob);
                         break;
                     }
                     else {
@@ -243,12 +243,12 @@ export const handler = async (event) => {
                     };
                     let voiceFile = await s3Service.getObject(s3GetParams).promise();
                     let voiceData = JSON.parse(voiceFile.Body.toString('utf-8'));
-                    console.log("voiceData", JSON.stringify(voiceData))
+                    // console.log("voiceData", JSON.stringify(voiceData))
 
                     if (voiceData && voiceData.results) {
                         chatMsg = '';
                         for (var i = 0; i < voiceData.results.transcripts.length; i++) {
-                            console.log(voiceData.results.transcripts[i]);
+                            // console.log(voiceData.results.transcripts[i]);
                             chatMsg += voiceData.results.transcripts[i].transcript + " ";
                         }
                         await telegramBot.sendMessage(chatRoom, "You: " + chatMsg);
@@ -259,14 +259,14 @@ export const handler = async (event) => {
                         //START OF REUSE CODE FROM TEXT MESSAGE
                         let history = await getItemRecent(chatRoom, chatTime);
                         if (history && history.length > 0) {
-                            console.log("history", history.length, history)
+                            // console.log("history", history.length, history)
 
                             var len = process.env.log_length
                             var max = (history.length > len) ? len : history.length;
                             for (var i = 0; i < max; i++) {
                                 var m = history.length - max + i
-                                console.log(m, history[m].message.S)
-                                console.log(m, history[m].response.S)
+                                // console.log(m, history[m].message.S)
+                                // console.log(m, history[m].response.S)
 
                                 apiMsg.push({ "role": "user", "content": history[m].message.S })
                                 apiMsg.push({ "role": "assistant", "content": history[m].response.S })
@@ -320,6 +320,8 @@ export const handler = async (event) => {
     let openaiApi = "https://api.openai.com/v1/chat/completions";
     let apiHeaders = { "headers": { "Authorization": process.env.openapi_token } };
     let apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
+
+    console.log(apiResponse)
 
     let botReply = apiResponse.data.choices[0].message.content;
     console.log("prompt_tokens / completion_tokens / total_tokens", apiResponse.data.usage.prompt_tokens, apiResponse.data.usage.completion_tokens, apiResponse.data.usage.total_tokens)
