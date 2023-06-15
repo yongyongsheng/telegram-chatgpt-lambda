@@ -316,7 +316,7 @@ export const handler = async (event) => {
                         "description": "Direction: north, south, east, west or empty",
                     }
                 },
-                "required": []
+                "required": ["country","area"]
             }
         }
     ]
