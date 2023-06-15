@@ -295,7 +295,7 @@ export const handler = async (event) => {
     await telegramBot.sendChatAction(chatRoom, 'typing');
 
     // CHATGPT
-    apiFunc = [
+    let apiFunc = [
         {
             "name": "callLambdaWeather",
             "description": "Get SINGAPORE weather",
