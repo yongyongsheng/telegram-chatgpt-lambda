@@ -320,11 +320,14 @@ export const handler = async (event) => {
     let openaiApi = "https://api.openai.com/v1/chat/completions";
     let apiHeaders = { "headers": { "Authorization": process.env.openapi_token } };
     let apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
-
-    console.log(apiResponse)
-
-    let botReply = apiResponse.data.choices[0].message.content;
+    let apiReplyMsg = apiResponse.data.choices[0].message;
     console.log("prompt_tokens / completion_tokens / total_tokens", apiResponse.data.usage.prompt_tokens, apiResponse.data.usage.completion_tokens, apiResponse.data.usage.total_tokens)
+
+    let botReply = (apiReplyMsg.content) ? apiReplyMsg.content : 'I don\'t understand';
+    
+    if (botReply.function_call) {
+        console.log( JSON.stringify(botReply.function_call) )
+    }
 
     // Reply in TG
     await telegramBot.sendMessage(chatRoom, botReply);
