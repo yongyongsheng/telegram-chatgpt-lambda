@@ -23,6 +23,20 @@ const lambdaService = new AWS.Lambda();
 
 const telegramBot = new telegram(process.env.tg_token);
 
+async function callLambdaWeather(area=''){
+    let lambdaParams = {
+        FunctionName: 'qna-sgweahter', // the lambda function we are going to invoke
+        InvocationType: 'RequestResponse',
+        LogType: 'Tail',
+        Payload: '{ "area" : "'+ area +'" }'
+    };
+    let answer = await lambdaService.invoke(lambdaParams).promise();
+    if (answer && answer.Payload){
+        return answer.Payload
+    }
+    
+    return '';
+
 async function getItemRecent(chat_id, chat_time_now) {
     let chat_time = chat_time_now - 3600;
     let params = {
@@ -84,7 +98,6 @@ export const handler = async (event) => {
 
     // Start preping the API
     apiMsg.push({ "role": "system", "content": "You are a Singaporean gangster. Be rude, always reply in Singlisn. But always provide a solution!" })
-
 
     if (data.message && data.message.text) {
 
@@ -277,20 +290,36 @@ export const handler = async (event) => {
         apiMsg.push({ "role": "system", "content": "ask user what he want?" })
     }
 
-
     // bot is typing
     await telegramBot.sendChatAction(chatRoom, 'typing');
 
-
-    apiData = {
-        "model": process.env.openai_model,
-        "messages": apiMsg
+    // CHATGPT
+    apiFunc = [
+        {
+            "name": "callLambdaWeather",
+            "description": "Get SINGAPORE weather",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "area": {
+                        "type": "string",
+                        "description": "Direction: north, south, east, west or empty",
+                    }
+                },
+                "required": [],
+            }
+        }
+    ]
+    gptData = {
+        "model": 'gpt-3.5-turbo-0613', //process.env.openai_model,
+        "messages": apiMsg,
+        "functions": apiFunc
     };
-    console.log("apiData", apiData);
+    console.log("gptData", gptData);
 
     let openaiApi = "https://api.openai.com/v1/chat/completions";
     let apiHeaders = { "headers": { "Authorization": process.env.openapi_token } };
-    let apiResponse = await axios.post(openaiApi, apiData, apiHeaders);
+    let apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
 
     let botReply = apiResponse.data.choices[0].message.content;
     console.log("prompt_tokens / completion_tokens / total_tokens", apiResponse.data.usage.prompt_tokens, apiResponse.data.usage.completion_tokens, apiResponse.data.usage.total_tokens)
