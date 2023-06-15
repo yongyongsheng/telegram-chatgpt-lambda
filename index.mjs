@@ -35,7 +35,7 @@ async function callLambdaWeather(arg=''){
     };
     let answer = await lambdaService.invoke(lambdaParams).promise();
     if (answer && answer.Payload){
-        return answer.Payload
+        return answer.Payload.body
     }
     
     return '';
@@ -327,11 +327,10 @@ export const handler = async (event) => {
 
     let apiReplyMsg = apiResponse.data.choices[0].message;
     console.log(apiReplyMsg)
-
-    let botReply = (apiReplyMsg.content) ? apiReplyMsg.content : 'I don\'t understand';
     
     if (apiReplyMsg.function_call) {
         toLogDb = false;
+
         let res
         if ( apiReplyMsg.function_call.name == 'callLambdaWeather') {
             res = await callLambdaWeather(apiReplyMsg.function_call.arguments);
@@ -339,9 +338,22 @@ export const handler = async (event) => {
 
         console.log("fx", apiReplyMsg.function_call)
         console.log("Res", res)
+
+        // Send the res back to gpt
+        apiMsg.push({ "role": "function", "content": res })
+        gptData = {
+            "model": 'gpt-3.5-turbo-0613', //process.env.openai_model,
+            "messages": apiMsg,
+            "functions": apiFunc
+        };
+        apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
+        
+        apiReplyMsg = apiResponse.data.choices[0].message;
+        console.log(apiReplyMsg)
     }
 
     // Reply in TG
+    let botReply = (apiReplyMsg.content) ? apiReplyMsg.content : 'I don\'t understand';
     await telegramBot.sendMessage(chatRoom, botReply);
 
     // Save to DB
