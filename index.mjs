@@ -23,19 +23,25 @@ const lambdaService = new AWS.Lambda();
 
 const telegramBot = new telegram(process.env.tg_token);
 
-async function callLambdaWeather(area=''){
-    let lambdaParams = {
-        FunctionName: 'qna-sgweahter', // the lambda function we are going to invoke
-        InvocationType: 'RequestResponse',
-        LogType: 'Tail',
-        Payload: '{ "area" : "'+ area +'" }'
-    };
-    let answer = await lambdaService.invoke(lambdaParams).promise();
-    if (answer && answer.Payload){
-        return answer.Payload
-    }
-    
-    return '';
+async function MyClass() {
+	this.callLambdaWeather = async function(arg='') {
+
+        argJson = JSON.parse(arg);
+        let area = argJson.area;
+
+        let lambdaParams = {
+            FunctionName: 'qna-sgweahter', // the lambda function we are going to invoke
+            InvocationType: 'RequestResponse',
+            LogType: 'Tail',
+            Payload: '{ "area" : "'+ area +'" }'
+        };
+        let answer = await lambdaService.invoke(lambdaParams).promise();
+        if (answer && answer.Payload){
+            return answer.Payload
+        }
+        
+        return '';
+	}
 }
 
 async function getItemRecent(chat_id, chat_time_now) {
@@ -328,7 +334,12 @@ export const handler = async (event) => {
     let botReply = (apiReplyMsg.content) ? apiReplyMsg.content : 'I don\'t understand';
     
     if (apiReplyMsg.function_call) {
+        toLogDb = false;
+
         console.log("fx", apiReplyMsg.function_call)
+
+        var myObject = new MyClass();
+        myObject[apiReplyMsg.function_call.name](apiReplyMsg.function_call.arguments);
     }
 
     // Reply in TG
