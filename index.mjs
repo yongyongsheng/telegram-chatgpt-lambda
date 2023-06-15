@@ -334,7 +334,7 @@ export const handler = async (event) => {
         toLogDb = false;
         let res
         if ( apiReplyMsg.function_call.name == 'callLambdaWeather') {
-            res = callLambdaWeather(apiReplyMsg.function_call.arguments)
+            res = await callLambdaWeather(apiReplyMsg.function_call.arguments);
         }
 
         console.log("fx", apiReplyMsg.function_call)
