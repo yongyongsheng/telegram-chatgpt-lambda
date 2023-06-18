@@ -47,6 +47,7 @@ async function setLambdaReminder(arg, fromUser){
 
     let payarg = JSON.parse(arg);
     let thearg = {
+        "actiom": "save",
         "reminderDate": payarg.reminderDate,
         "reminderMsg": payarg.reminderMsg,
         "toUser": payarg.toUser,
