@@ -57,7 +57,7 @@ async function setLambdaReminder(arg, fromUser){
         FunctionName: 'qns-reminder', // the lambda function we are going to invoke
         InvocationType: 'RequestResponse',
         LogType: 'Tail',
-        Payload: thearg
+        Payload: JSON.stringify(thearg)
     };
     let answer = await lambdaService.invoke(lambdaParams).promise();
     if (answer && answer.Payload){
@@ -125,7 +125,8 @@ export const handler = async (event) => {
     let chatMsg;
 
     // Start preping the API
-    apiMsg.push({ "role": "system", "content": "You are a Singaporean gangster. Be rude, always reply in Singlisn. But always provide a solution!" })
+    let ts = new Date().toLocaleString('en-US', {timeZone: 'Asia/Singapore'});
+    apiMsg.push({ "role": "system", "content": "Today is "+ts+". You are a Singaporean gangster. Be rude, always reply in Singlisn. But always provide a solution!" })
 
     if (data.message && data.message.text) {
 
