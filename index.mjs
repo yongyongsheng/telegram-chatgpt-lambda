@@ -367,7 +367,7 @@ export const handler = async (event) => {
         }
     ]
     let gptData = {
-        "model": 'gpt-3.5-turbo-0613', //process.env.openai_model,
+        "model": process.env.openai_model,
         "messages": apiMsg,
         "functions": apiFunc
     };
@@ -382,13 +382,14 @@ export const handler = async (event) => {
     console.log("Data from GPT", apiReplyMsg)
     
     if (apiReplyMsg.function_call) {
-        //toLogDb = false;
 
         let res
         if ( apiReplyMsg.function_call.name == 'callLambdaWeather') {
+            //toLogDb = false;
             res = await callLambdaWeather(apiReplyMsg.function_call.arguments);
         }
         if ( apiReplyMsg.function_call.name == 'setLambdaReminder') {
+            toLogDb = false;
             res = await setLambdaReminder(apiReplyMsg.function_call.arguments, chatRoom);
         }
 
@@ -401,8 +402,12 @@ export const handler = async (event) => {
             "name": apiReplyMsg.function_call.name,
             "content": JSON.stringify(res) 
         })
+        apiMsg.push({ 
+            "role": "system", 
+            "content": "Do not ask question"
+        })
         gptData = {
-            "model": 'gpt-3.5-turbo-0613', //process.env.openai_model,
+            "model": process.env.openai_model,
             "messages": apiMsg,
             "functions": apiFunc
         };
