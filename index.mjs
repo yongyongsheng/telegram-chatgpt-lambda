@@ -43,6 +43,28 @@ async function callLambdaWeather(arg){
     }
     return 'I do not know';
 }
+async function setLambdaReminder(arg, fromUser){
+
+    let payarg = JSON.parse(arg);
+    let thearg = {
+        "reminderDate": payarg.reminderDate,
+        "reminderMsg": payarg.reminderMsg,
+        "toUser": payarg.toUser,
+        "fromUser": fromUser
+    }
+    
+    let lambdaParams = {
+        FunctionName: 'qns-reminder', // the lambda function we are going to invoke
+        InvocationType: 'RequestResponse',
+        LogType: 'Tail',
+        Payload: thearg
+    };
+    let answer = await lambdaService.invoke(lambdaParams).promise();
+    if (answer && answer.Payload){
+        let r = JSON.parse(answer.Payload);
+        return r.body;
+    }
+}
 
 async function getItemRecent(chat_id, chat_time_now) {
     let chat_time = chat_time_now - 3600;
@@ -309,14 +331,36 @@ export const handler = async (event) => {
                 "properties": {
                     "country": {
                         "type": "string",
-                        "description": "Country, i.e. Singapore",
+                        "description": "Country, i.e. Singapore"
                     },
                     "area": {
                         "type": "string",
-                        "description": "Direction: north, south, east, west or empty",
+                        "description": "Direction: north, south, east, west or empty"
                     }
                 },
                 "required": ["country","area"]
+            }
+        },
+        {
+            "name": "setLambdaReminder",
+            "description": "Set reminder for message at certain time",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "reminderDate": {
+                        "type": "string",
+                        "description": "Date & time of the reminder in YYYY-MM-DD HH:ii format in Singapore time, i.e. 2023-05-11 13:45"
+                    },
+                    "reminderMsg": {
+                        "type": "string",
+                        "description": "Message to remind"
+                    },
+                    "toUser": {
+                        "type": "string",
+                        "description": "User name of the reminder for i.e. YS or 43328292"
+                    }
+                },
+                "required": ["reminderDate","reminderMsg", "toUser"]
             }
         }
     ]
@@ -325,7 +369,7 @@ export const handler = async (event) => {
         "messages": apiMsg,
         "functions": apiFunc
     };
-    console.log("gptData", gptData);
+    console.log("Data to GPT", gptData);
 
     let openaiApi = "https://api.openai.com/v1/chat/completions";
     let apiHeaders = { "headers": { "Authorization": process.env.openapi_token } };
@@ -333,7 +377,7 @@ export const handler = async (event) => {
     console.log("prompt_tokens / completion_tokens / total_tokens", apiResponse.data.usage.prompt_tokens, apiResponse.data.usage.completion_tokens, apiResponse.data.usage.total_tokens)
 
     let apiReplyMsg = apiResponse.data.choices[0].message;
-    console.log(apiReplyMsg)
+    console.log("Data from GPT", apiReplyMsg)
     
     if (apiReplyMsg.function_call) {
         //toLogDb = false;
@@ -342,9 +386,12 @@ export const handler = async (event) => {
         if ( apiReplyMsg.function_call.name == 'callLambdaWeather') {
             res = await callLambdaWeather(apiReplyMsg.function_call.arguments);
         }
+        if ( apiReplyMsg.function_call.name == 'setLambdaReminder') {
+            res = await setLambdaReminder(apiReplyMsg.function_call.arguments, chatRoom);
+        }
 
         console.log("fx", apiReplyMsg.function_call)
-        console.log("Res", res)
+        console.log("fx Res", res)
 
         // Send the res back to gpt
         apiMsg.push({ 
