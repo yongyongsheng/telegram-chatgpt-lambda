@@ -402,10 +402,6 @@ export const handler = async (event) => {
             "name": apiReplyMsg.function_call.name,
             "content": JSON.stringify(res) 
         })
-        apiMsg.push({ 
-            "role": "system", 
-            "content": "Do not ask question"
-        })
         gptData = {
             "model": process.env.openai_model,
             "messages": apiMsg,
