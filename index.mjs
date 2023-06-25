@@ -373,10 +373,11 @@ export const handler = async (event) => {
     };
     let openaiApi = "https://api.openai.com/v1/chat/completions";
     let apiHeaders = { "headers": { "Authorization": process.env.openapi_token } };
+    let apiResponse
     console.log("Data to GPT", gptData);
 
     try{
-        let apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
+        apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
         console.log("prompt_tokens / completion_tokens / total_tokens", apiResponse.data.usage.prompt_tokens, apiResponse.data.usage.completion_tokens, apiResponse.data.usage.total_tokens)
     }
     catch (err){
