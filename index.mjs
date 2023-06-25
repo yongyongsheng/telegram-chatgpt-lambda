@@ -383,6 +383,12 @@ export const handler = async (event) => {
     catch (err){
         console.log("API to Openai", err);
         await telegramBot.sendMessage(chatRoom, "Aiyo, now got hangover sia. Ask me later lah, when my head stop spinning. Can or not?");
+                    
+        const response = {
+            statusCode: 200,
+            body: JSON.stringify("I failed"),
+        };
+        return response;
     }
 
     let apiReplyMsg = apiResponse.data.choices[0].message;
@@ -422,6 +428,12 @@ export const handler = async (event) => {
         catch (err){
             console.log("API to Openai", err);
             await telegramBot.sendMessage(chatRoom, "Library closed leh, I cannot check. Ask later can or not?");
+            
+            const response = {
+                statusCode: 200,
+                body: JSON.stringify("I failed"),
+            };
+            return response;
         }
         
         apiReplyMsg = apiResponse.data.choices[0].message;
@@ -435,6 +447,12 @@ export const handler = async (event) => {
     }
     catch (err){
         console.log("API to TG", err);
+                    
+        const response = {
+            statusCode: 200,
+            body: JSON.stringify("I failed"),
+        };
+        return response;
     }
 
     // Save to DB
