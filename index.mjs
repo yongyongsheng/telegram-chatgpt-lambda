@@ -371,43 +371,57 @@ export const handler = async (event) => {
         "messages": apiMsg,
         "functions": apiFunc
     };
-    console.log("Data to GPT", gptData);
-
     let openaiApi = "https://api.openai.com/v1/chat/completions";
     let apiHeaders = { "headers": { "Authorization": process.env.openapi_token } };
-    let apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
-    console.log("prompt_tokens / completion_tokens / total_tokens", apiResponse.data.usage.prompt_tokens, apiResponse.data.usage.completion_tokens, apiResponse.data.usage.total_tokens)
+    console.log("Data to GPT", gptData);
+
+    try{
+        let apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
+        console.log("prompt_tokens / completion_tokens / total_tokens", apiResponse.data.usage.prompt_tokens, apiResponse.data.usage.completion_tokens, apiResponse.data.usage.total_tokens)
+    }
+    catch (err){
+        console.log("API to Openai", err);
+        await telegramBot.sendMessage(chatRoom, "Aiyo, now got hangover sia. Ask me later lah, when my head stop spinning. Can or not?");
+    }
 
     let apiReplyMsg = apiResponse.data.choices[0].message;
     console.log("Data from GPT", apiReplyMsg)
     
     if (apiReplyMsg.function_call) {
 
-        let res
-        if ( apiReplyMsg.function_call.name == 'callLambdaWeather') {
-            //toLogDb = false;
-            res = await callLambdaWeather(apiReplyMsg.function_call.arguments);
-        }
-        if ( apiReplyMsg.function_call.name == 'setLambdaReminder') {
-            toLogDb = false;
-            res = await setLambdaReminder(apiReplyMsg.function_call.arguments, chatRoom);
-        }
+        try{ 
+            let res
+            if ( apiReplyMsg.function_call.name == 'callLambdaWeather') {
+                //toLogDb = false;
+                res = await callLambdaWeather(apiReplyMsg.function_call.arguments);
+            }
+            if ( apiReplyMsg.function_call.name == 'setLambdaReminder') {
+                toLogDb = false;
+                res = await setLambdaReminder(apiReplyMsg.function_call.arguments, chatRoom);
+            }
+    
+            console.log("fx", apiReplyMsg.function_call)
+            console.log("fx Res", res)
 
-        console.log("fx", apiReplyMsg.function_call)
-        console.log("fx Res", res)
 
-        // Send the res back to gpt
-        apiMsg.push({ 
-            "role": "function", 
-            "name": apiReplyMsg.function_call.name,
-            "content": JSON.stringify(res) 
-        })
-        gptData = {
-            "model": process.env.openai_model,
-            "messages": apiMsg,
-            "functions": apiFunc
-        };
-        apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
+            // Send the res back to gpt
+            apiMsg.push({ 
+                "role": "function", 
+                "name": apiReplyMsg.function_call.name,
+                "content": JSON.stringify(res) 
+            })
+            gptData = {
+                "model": process.env.openai_model,
+                "messages": apiMsg,
+                "functions": apiFunc
+            };
+            apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
+
+        }
+        catch (err){
+            console.log("API to Openai", err);
+            await telegramBot.sendMessage(chatRoom, "Library closed leh, I cannot check. Ask later can or not?");
+        }
         
         apiReplyMsg = apiResponse.data.choices[0].message;
         console.log(apiReplyMsg)
@@ -415,7 +429,12 @@ export const handler = async (event) => {
 
     // Reply in TG
     let botReply = (apiReplyMsg.content) ? apiReplyMsg.content : 'I don\'t understand';
-    await telegramBot.sendMessage(chatRoom, botReply);
+    try{
+        await telegramBot.sendMessage(chatRoom, botReply);
+    }
+    catch (err){
+        console.log("API to TG", err);
+    }
 
     // Save to DB
     if (toLogDb) {
