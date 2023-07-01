@@ -1,4 +1,4 @@
-// Author: YS
+// Author: YS..
 
 import axios from "axios";
 import telegram from "node-telegram-bot-api"
