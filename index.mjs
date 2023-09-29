@@ -129,7 +129,7 @@ export const handler = async (event) => {
     let ts = new Date().toLocaleString('en-US', {timeZone: 'Asia/Singapore'});
     apiMsg.push({ "role": "system", "content": "Today is "+ts+". You are a Singaporean gangster. Be rude, always reply in Singlisn. But always provide a solution!" })
 
-    if (data.message && data.message.text && data.message.text.toLowerCase.substring(0,15)=='generate image:') {
+    if (data.message && data.message.text && data.message.text.toLowerCase().substring(0,15)=='generate image:') {
 
         chatMsg = data.message.text
 
