@@ -129,9 +129,9 @@ export const handler = async (event) => {
     let ts = new Date().toLocaleString('en-US', {timeZone: 'Asia/Singapore'});
     apiMsg.push({ "role": "system", "content": "Today is "+ts+". You are a Singaporean gangster. Be rude, always reply in Singlisn. But always provide a solution!" })
 
-    if (data.message && data.message.text && data.message.text.toLowerCase().substring(0,15)=='generate image:') {
+    if (data.message && data.message.text && data.message.text.toLowerCase().substring(0,5)=='draw:') {
 
-        let imgMsg = data.message.text.substring(16, data.message.text.length)
+        let imgMsg = data.message.text.substring(5, data.message.text.length)
 
         // bot is sending photo
         await telegramBot.sendChatAction(chatRoom, 'upload_photo');
