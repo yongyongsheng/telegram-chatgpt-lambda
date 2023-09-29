@@ -145,16 +145,21 @@ export const handler = async (event) => {
         console.log("Data to GPT", gptData);
         console.log("Image Response", apiResponse.data);
 
-        let replyMsg = apiResponse.data.data.url;
+        let imgUrl = apiResponse.data.data[0].url;
 
-        if (!replyMsg)
-            replyMsg = 'nothing wor'
+        if (imgUrl) {
+            // Send image via TG
+            await telegramBot.sendPhoto(chatRoom, imgUrl);
+        }
+        else {
+            imgUrl = 'Cannot draw image now. Try again later...';
+            await telegramBot.sendMessage(chatRoom, replyMsg);
+        }
 
-        await telegramBot.sendMessage(chatRoom, replyMsg);
 
         const response = {
             statusCode: 200,
-            body: JSON.stringify(replyMsg),
+            body: JSON.stringify(imgUrl),
         };
         return response;
 
