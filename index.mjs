@@ -133,6 +133,9 @@ export const handler = async (event) => {
 
         let imgMsg = data.message.text.substring(16, data.message.text.length)
 
+        // bot is sending photo
+        await telegramBot.sendChatAction(chatRoom, 'upload_photo');
+        
         let gptData = {
             "prompt": imgMsg,
             "n": 1,
