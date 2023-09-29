@@ -171,6 +171,31 @@ export const handler = async (event) => {
          */
 
     }
+    else if (data.message && data.message.text && data.message.text.toLowerCase().substring(0,7)=='google:') {
+
+        let query = data.message.text.substring(7, data.message.text.length)
+
+        let lambdaParams = {
+            FunctionName: 'google-search-summarize', // the lambda function we are going to invoke
+            InvocationType: 'RequestResponse',
+            LogType: 'Tail',
+            Payload: {"query":query}
+        };
+        console.log("google:", lambdaParams)
+        let answer = await lambdaService.invoke(lambdaParams).promise();
+        let r ;
+        if (answer && answer.Payload){
+            r = JSON.parse(answer.Payload);
+            console.log("google:", r)
+        }
+
+        const response = {
+            statusCode: 200,
+            body: JSON.stringify(r),
+        };
+        return response;
+        
+    }
     else if (data.message && data.message.text) {
 
         chatMsg = data.message.text
