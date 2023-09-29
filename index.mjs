@@ -174,12 +174,13 @@ export const handler = async (event) => {
     else if (data.message && data.message.text && data.message.text.toLowerCase().substring(0,7)=='google:') {
 
         let query = data.message.text.substring(7, data.message.text.length)
+        let lambdaParamQ = {"query":query};
 
         let lambdaParams = {
             FunctionName: 'google-search-summarize', // the lambda function we are going to invoke
             InvocationType: 'RequestResponse',
             LogType: 'Tail',
-            Payload: {"query":query}
+            Payload: JSON.stringify(lambdaParamQ)
         };
         console.log("google:", lambdaParams)
         let answer = await lambdaService.invoke(lambdaParams).promise();
