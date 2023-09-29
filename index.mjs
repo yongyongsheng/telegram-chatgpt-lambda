@@ -202,16 +202,6 @@ export const handler = async (event) => {
             // Let chatGPT reply in Singlish
             apiMsg.push({ "role": "assistant", "content": "Rephrase this below Singlish:\n\n" + gPayload.body.summary })
         }
-        else {
-            replyMsg = 'I cannot find anything. Try again later...';
-            await telegramBot.sendMessage(chatRoom, replyMsg);
-        }
-
-        const response = {
-            statusCode: 200,
-            body: JSON.stringify(replyMsg),
-        };
-        return response;
         
     }
     else if (data.message && data.message.text) {
