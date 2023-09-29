@@ -156,9 +156,8 @@ export const handler = async (event) => {
         }
         else {
             imgUrl = 'Cannot draw image now. Try again later...';
-            await telegramBot.sendMessage(chatRoom, replyMsg);
+            await telegramBot.sendMessage(chatRoom, imgUrl);
         }
-
 
         const response = {
             statusCode: 200,
@@ -181,18 +180,20 @@ export const handler = async (event) => {
             InvocationType: 'RequestResponse',
             LogType: 'Tail',
             Payload: JSON.stringify(lambdaParamQ)
-        };
-        console.log("google:", lambdaParams)
-        let answer = await lambdaService.invoke(lambdaParams).promise();
-        let r ;
+        }; 
+        let answer = await lambdaService.invoke(lambdaParams).promise(); 
         if (answer && answer.Payload){
             r = JSON.parse(answer.Payload);
-            console.log("google:", r)
+            console.log("google:", r.body.msg)
+        }
+        else {
+            let replyMsg = 'I cannot find anything. Try again later...';
+            await telegramBot.sendMessage(chatRoom, replyMsg);
         }
 
         const response = {
             statusCode: 200,
-            body: JSON.stringify(r),
+            body: JSON.stringify(replyMsg),
         };
         return response;
         
