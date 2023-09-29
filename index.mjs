@@ -137,15 +137,15 @@ export const handler = async (event) => {
             "prompt": imgMsg,
             "n": 1,
             "size": '512x512',
-            "response_format": 'url' //b64_json
+            "response_format": 'url'
         };
         let openaiApi = "https://api.openai.com/v1/images/generations";
         let apiHeaders = { "headers": { "Authorization": process.env.openapi_token } };
         let apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
         console.log("Data to GPT", gptData);
-        console.log(apiResponse);
+        console.log("Image Response", apiResponse.data);
 
-        let replyMsg = apiResponse.data.url;
+        let replyMsg = apiResponse.data.data.url;
 
         if (!replyMsg)
             replyMsg = 'nothing wor'
