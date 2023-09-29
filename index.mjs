@@ -189,13 +189,18 @@ export const handler = async (event) => {
         let answer = await lambdaService.invoke(lambdaParams).promise(); 
         if (answer && answer.Payload){
             let gPayload = JSON.parse(answer.Payload);
-            let gAns = gPayload.body.msg;
-            console.log("google:", gAns)
+            
+            // let gAns = gPayload.body.msg;
+            // for(var a=0; a < gAns.length; a++){
+            //     replyMsg = gAns[a];
+            //     await telegramBot.sendMessage(chatRoom, replyMsg, {"parse_mode":"HTML",disable_web_page_preview:true});
+            // }
 
-            for(var a=0; a < gAns.length; a++){
-                replyMsg = gAns[a];
-                await telegramBot.sendMessage(chatRoom, replyMsg, {"parse_mode":"HTML",disable_web_page_preview:true});
-            }
+            // Send sources into the chat in case user want to reference
+            await telegramBot.sendMessage(chatRoom, gPayload.body.sources, {"parse_mode":"HTML",disable_web_page_preview:true});
+
+            // Let chatGPT reply in Singlish
+            apiMsg.push({ "role": "assistant", "content": "Rephrase this below Singlish:\n\n" + gPayload.body.summary })
         }
         else {
             replyMsg = 'I cannot find anything. Try again later...';
