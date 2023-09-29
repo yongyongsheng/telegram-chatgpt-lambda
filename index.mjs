@@ -143,8 +143,12 @@ export const handler = async (event) => {
         let apiHeaders = { "headers": { "Authorization": process.env.openapi_token } };
         let apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
         console.log("Data to GPT", gptData);
+        console.log(apiResponse);
 
         let replyMsg = apiResponse.data.url;
+
+        if (!replyMsg)
+            replyMsg = 'nothing wor'
 
         await telegramBot.sendMessage(chatRoom, replyMsg);
 
