@@ -181,20 +181,21 @@ export const handler = async (event) => {
             LogType: 'Tail',
             Payload: JSON.stringify(lambdaParamQ)
         }; 
+
+        let replyMsg;
         let answer = await lambdaService.invoke(lambdaParams).promise(); 
         if (answer && answer.Payload){
             let gPayload = JSON.parse(answer.Payload);
             let gAns = gPayload.body.msg;
             console.log("google:", gAns)
 
-            let replyMsg;
             for(var a=0; a < gAns.length; a++){
                 replyMsg = gAns[a];
                 await telegramBot.sendMessage(chatRoom, replyMsg);
             }
         }
         else {
-            let replyMsg = 'I cannot find anything. Try again later...';
+            replyMsg = 'I cannot find anything. Try again later...';
             await telegramBot.sendMessage(chatRoom, replyMsg);
         }
 
