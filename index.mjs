@@ -183,7 +183,7 @@ export const handler = async (event) => {
         }; 
         let answer = await lambdaService.invoke(lambdaParams).promise(); 
         if (answer && answer.Payload){
-            r = JSON.parse(answer.Payload);
+            let r = JSON.parse(answer.Payload);
             console.log("google:", r.body.msg)
         }
         else {
