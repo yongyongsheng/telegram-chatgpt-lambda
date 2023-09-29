@@ -131,13 +131,26 @@ export const handler = async (event) => {
 
     if (data.message && data.message.text && data.message.text.toLowerCase().substring(0,15)=='generate image:') {
 
-        chatMsg = data.message.text.substring(16, data.message.text.length)
+        let imgMsg = data.message.text.substring(16, data.message.text.length)
 
-        await telegramBot.sendMessage(chatRoom, chatMsg);
+        let gptData = {
+            "prompt": imgMsg,
+            "n": 1,
+            "size": '512x512',
+            "response_format": 'url' //b64_json
+        };
+        let openaiApi = "https://api.openai.com/v1/images/generations";
+        let apiHeaders = { "headers": { "Authorization": process.env.openapi_token } };
+        let apiResponse = await axios.post(openaiApi, gptData, apiHeaders);
+        console.log("Data to GPT", gptData);
+
+        let replyMsg = apiResponse.data.url;
+
+        await telegramBot.sendMessage(chatRoom, replyMsg);
 
         const response = {
             statusCode: 200,
-            body: JSON.stringify(chatMsg),
+            body: JSON.stringify(replyMsg),
         };
         return response;
 
