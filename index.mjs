@@ -191,7 +191,7 @@ export const handler = async (event) => {
 
             for(var a=0; a < gAns.length; a++){
                 replyMsg = gAns[a];
-                await telegramBot.sendMessage(chatRoom, replyMsg);
+                await telegramBot.sendMessage(chatRoom, replyMsg, {"parse_mode":"HTML",disable_web_page_preview:true});
             }
         }
         else {
