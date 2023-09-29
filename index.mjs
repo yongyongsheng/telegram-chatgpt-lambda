@@ -173,7 +173,7 @@ export const handler = async (event) => {
     else if (data.message && data.message.text && data.message.text.toLowerCase().substring(0,7)=='google:') {
 
         let query = data.message.text.substring(7, data.message.text.length)
-        let lambdaParamQ = {"query":query};
+        let lambdaParamQ = {"q":query};
 
         let lambdaParams = {
             FunctionName: 'google-search-summarize', // the lambda function we are going to invoke
@@ -183,8 +183,15 @@ export const handler = async (event) => {
         }; 
         let answer = await lambdaService.invoke(lambdaParams).promise(); 
         if (answer && answer.Payload){
-            let r = JSON.parse(answer.Payload);
-            console.log("google:", r.body.msg)
+            let gPayload = JSON.parse(answer.Payload);
+            let gAns = gPayload.body.msg;
+            console.log("google:", gAns)
+
+            let replyMsg;
+            for(var a=0; a < gAns.length; a++){
+                replyMsg = gAns[a];
+                await telegramBot.sendMessage(chatRoom, replyMsg);
+            }
         }
         else {
             let replyMsg = 'I cannot find anything. Try again later...';
