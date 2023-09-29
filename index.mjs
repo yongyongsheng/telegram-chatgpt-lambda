@@ -175,6 +175,9 @@ export const handler = async (event) => {
         let query = data.message.text.substring(7, data.message.text.length)
         let lambdaParamQ = {"q":query};
 
+        // bot is typing
+        await telegramBot.sendChatAction(chatRoom, 'typing');
+
         let lambdaParams = {
             FunctionName: 'google-search-summarize', // the lambda function we are going to invoke
             InvocationType: 'RequestResponse',
