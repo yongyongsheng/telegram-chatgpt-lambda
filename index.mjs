@@ -131,18 +131,19 @@ export const handler = async (event) => {
 
     if (data.message && data.message.text && data.message.text.toLowerCase().substring(0,15)=='generate image:') {
 
-        chatMsg = data.message.text
+        chatMsg = data.message.text.substring(16, data.message.text.length)
 
-        await telegramBot.sendMessage(chatRoom, 'what picture?');
+        await telegramBot.sendMessage(chatRoom, chatMsg);
 
         const response = {
             statusCode: 200,
-            body: JSON.stringify('Image completion'),
+            body: JSON.stringify(chatMsg),
         };
         return response;
 
-
-        apiMsg.push({ "role": "user", "content": chatMsg })
+        /*
+         * THIS IS INDIVIDUAL CALL TO OPENAI DALL-E API. NO NEED TO CONTINUE BELOW FX.
+         */
 
     }
     else if (data.message && data.message.text) {
