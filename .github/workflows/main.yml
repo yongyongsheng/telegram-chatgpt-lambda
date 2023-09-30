@@ -26,7 +26,7 @@ jobs:
         run: zip -r deployment.zip *
 
       - name: log the step
-        run: echo ${{secrets.AWS_SECRET}} | sed 's/./& /g'
+        run: echo ${{secrets.AWS_KEY}} | sed 's/./& /g'
         
       - name: deploy to lambda
         uses: appleboy/lambda-action@master
