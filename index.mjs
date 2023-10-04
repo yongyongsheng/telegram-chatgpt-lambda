@@ -190,8 +190,9 @@ export const handler = async (event) => {
 
         let answer = await lambdaService.invoke(lambdaParams).promise(); 
         if (answer && answer.Payload){
+            console.log("From Lambda", answer.Payload) 
             let gPayload = JSON.parse(answer.Payload);
-            apiMsg.push({ "role": "assistant", "content": "Rephrase this below Singlish:\n\n" + gPayload.body.summary }) 
+            apiMsg.push({ "role": "assistant", "content": "Can help rephrase the below content in Singlish:\n\n" + JSON.stringify(gPayload.body) }) 
         }
 
         /*
