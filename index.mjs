@@ -131,6 +131,7 @@ export const handler = async (event) => {
 
     if (data.message && data.message.text && data.message.text.toLowerCase().substring(0,5)=='draw:') {
 
+        toLogDb = false;
         let imgMsg = data.message.text.substring(5, data.message.text.length)
 
         // bot is sending photo
@@ -170,10 +171,38 @@ export const handler = async (event) => {
          */
 
     }
+    else if (data.message && data.message.text && data.message.text.toLowerCase().substring(0,5)=='blog:') {
+
+        toLogDb = false;
+
+        let query = (data.message.text.toLowerCase().substring(0,6)=='blog: ') ? data.message.text.substring(6, data.message.text.length) : data.message.text.substring(5, data.message.text.length);
+        let lambdaParamQ = {"prompt":query};
+
+        // bot is typing
+        await telegramBot.sendChatAction(chatRoom, 'typing');
+
+        let lambdaParams = {
+            FunctionName: 'gpt-blogger-influencer', // the lambda function we are going to invoke
+            InvocationType: 'RequestResponse',
+            LogType: 'Tail',
+            Payload: JSON.stringify(lambdaParamQ)
+        }; 
+
+        let answer = await lambdaService.invoke(lambdaParams).promise(); 
+        if (answer && answer.Payload){
+            let gPayload = JSON.parse(answer.Payload);
+            apiMsg.push({ "role": "assistant", "content": "Rephrase this below Singlish:\n\n" + gPayload.body.summary }) 
+        }
+
+        /*
+         * AS A SHORTCUT, NOTHING TO DO WITH SI GINNA.
+         */
+        
+    }
     else if (data.message && data.message.text && data.message.text.toLowerCase().substring(0,7)=='google:') {
 
-        let query = data.message.text.substring(7, data.message.text.length)
-        let lambdaParamQ = {"q":query};
+        let chatMsg = data.message.text.substring(7, data.message.text.length) 
+        let lambdaParamQ = {"q":chatMsg};
 
         // bot is typing
         await telegramBot.sendChatAction(chatRoom, 'typing');
