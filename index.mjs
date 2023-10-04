@@ -195,7 +195,7 @@ export const handler = async (event) => {
         }
 
         /*
-         * AS A SHORTCUT, NOTHING TO DO WITH SI GINNA.v 
+         * AS A SHORTCUT, NOTHING TO DO WITH SI GINNA.
          */
         
     }
