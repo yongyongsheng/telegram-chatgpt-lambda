@@ -218,12 +218,19 @@ export const handler = async (event) => {
         let answer = await lambdaService.invoke(lambdaParams).promise(); 
         if (answer && answer.Payload){
             let gPayload = JSON.parse(answer.Payload);
-            apiMsg.push({ "role": "assistant", "content": "Rephrase this below Singlish:\n\n" + gPayload.body.summary })
-            
-            // Send sources into the chat in case user want to reference
-            await telegramBot.sendMessage(chatRoom, "I read from: " + gPayload.body.sources + ".", {"parse_mode":"HTML",disable_web_page_preview:true});
-
             console.log("From Google", gPayload)
+            if (gPayload && gPayload.body && gPayload.body.summary) {
+                apiMsg.push({ "role": "assistant", "content": "Rephrase this below Singlish:\n\n" + gPayload.body.summary })
+                
+                // Send sources into the chat in case user want to reference
+                await telegramBot.sendMessage(chatRoom, "I read from: " + gPayload.body.sources + ".", {"parse_mode":"HTML",disable_web_page_preview:true});
+            }
+            else {
+                await telegramBot.sendMessage(chatRoom, answer.Payload, {"parse_mode":"HTML",disable_web_page_preview:true});
+            }
+        }
+        else {
+            await telegramBot.sendMessage(chatRoom, "Google unfriend me sia.", {"parse_mode":"HTML",disable_web_page_preview:true});
         }
         
     }
